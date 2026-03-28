@@ -1,0 +1,47 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Next Horizons - Candidate</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Candidate Dashboard</h1>
+      <button id="logoutBtn" class="ghost">Log out</button>
+    </div>
+
+    <section class="card">
+      <h2>Your profile</h2>
+      <form id="profileForm" class="stack">
+        <input id="first_name" placeholder="First name" />
+        <input id="last_name" placeholder="Last name" />
+        <input id="phone" placeholder="Best number to reach you at" />
+        <input id="pronouns" placeholder="Pronouns" />
+        <input id="previous_names" placeholder="Previous legal names (comma separated)" />
+        <select id="job_type">
+          <option value="">What are you looking for?</option>
+          <option>Full-Time</option>
+          <option>Part-Time</option>
+          <option>Contract</option>
+          <option>Internship</option>
+        </select>
+        <input id="desired_titles" placeholder="Desired job titles (comma separated)" />
+        <textarea id="desired_duties" placeholder="Desired duties (comma separated)"></textarea>
+        <button type="submit">Save profile</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Matching jobs</h2>
+      <div id="matches"></div>
+    </section>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="candidate.js"></script>
+</body>
+</html>

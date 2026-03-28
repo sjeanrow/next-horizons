@@ -1,0 +1,49 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Next Horizons</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <h1>Next Horizons</h1>
+      <p>Cut through the nonsense. Better job matches, clearer listings, faster applications.</p>
+    </header>
+
+    <div class="grid two">
+      <section class="card">
+        <h2>Sign up</h2>
+        <form id="signupForm">
+          <input id="signupFirst" placeholder="First name" required />
+          <input id="signupLast" placeholder="Last name" required />
+          <input id="signupEmail" type="email" placeholder="Email" required />
+          <input id="signupPassword" type="password" placeholder="Password" required />
+          <select id="signupRole" required>
+            <option value="candidate">Candidate</option>
+            <option value="employer">Employer</option>
+          </select>
+          <button type="submit">Create account</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Log in</h2>
+        <form id="loginForm">
+          <input id="loginEmail" type="email" placeholder="Email" required />
+          <input id="loginPassword" type="password" placeholder="Password" required />
+          <button type="submit">Log in</button>
+        </form>
+      </section>
+    </div>
+
+    <p id="status" class="status"></p>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
