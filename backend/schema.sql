@@ -14,6 +14,45 @@ create table if not exists users (
   desired_duties text[]
 );
 
+create table if not exists candidate_experiences (
+  id bigint generated always as identity primary key,
+  candidate_id bigint references users(id) on delete cascade,
+  job_title text,
+  company text,
+  start_month text,
+  start_year text,
+  end_month text,
+  end_year text,
+  duties text[]
+);
+
+create table if not exists candidate_education (
+  id bigint generated always as identity primary key,
+  candidate_id bigint references users(id) on delete cascade,
+  college_name text,
+  years_attended text,
+  degree text,
+  field_of_study text
+);
+
+create table if not exists candidate_languages (
+  id bigint generated always as identity primary key,
+  candidate_id bigint references users(id) on delete cascade,
+  language text
+);
+
+create table if not exists candidate_certificates (
+  id bigint generated always as identity primary key,
+  candidate_id bigint references users(id) on delete cascade,
+  name text
+);
+
+create table if not exists candidate_military (
+  id bigint generated always as identity primary key,
+  candidate_id bigint references users(id) on delete cascade,
+  details text
+);
+
 create table if not exists jobs (
   id bigint generated always as identity primary key,
   employer_id bigint references users(id) on delete cascade,

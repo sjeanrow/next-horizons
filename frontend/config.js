@@ -1,1 +1,1 @@
-window.API_URL = "https://next-horizons.onrender.com";
+window.API_URL = "http://localhost:3000";
