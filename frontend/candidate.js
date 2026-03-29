@@ -1,5 +1,6 @@
 
 function token() { return localStorage.getItem("nh_token"); }
+function getSitePassword() { return localStorage.getItem("nh_site_password") || ""; }
 function logout() { localStorage.clear(); location.href = "index.html"; }
 async function api(path, options = {}) {
   const res = await fetch(`${window.API_URL}${path}`, {
@@ -7,11 +8,28 @@ async function api(path, options = {}) {
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token()}`,
+      "x-site-password": getSitePassword(),
       ...(options.headers || {})
     }
   });
   const data = await res.json();
   return { res, data };
+async function confirmAccess() {
+  if (!getSitePassword()) {
+    location.href = "index.html";
+    return false;
+  }
+  const res = await fetch(`${window.API_URL}/beta/check`, {
+    method: "POST",
+    headers: { "x-site-password": getSitePassword() }
+  });
+  if (!res.ok) {
+    localStorage.removeItem("nh_site_password");
+    location.href = "index.html";
+    return false;
+  }
+  return true;
+}
 }
 function setTabs() {
   document.querySelectorAll("[data-tab]").forEach((btn) => {
@@ -298,6 +316,10 @@ async function loadApplications() {
   });
 }
 
-loadProfile();
-loadMatches();
-loadApplications();
+(async () => {
+  const ok = await confirmAccess();
+  if (!ok) return;
+  loadProfile();
+  loadMatches();
+  loadApplications();
+})();
