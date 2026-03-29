@@ -25,23 +25,88 @@ function renderChips(root, values, onRemove){ root.innerHTML=""; values.forEach(
 if (!token()) location.href = "index.html";
 document.getElementById("logoutBtn").addEventListener("click", logout);
 setTabs();
-let duties=[], educationReq=[], experienceReq=[], dayShifts=[];
+const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+let selectedDays = [];
+let shifts = {};
 function addChipValue(inputId, arr, renderFn){ const input=document.getElementById(inputId); const value=input.value.trim(); if(!value) return; arr.push(value); input.value=""; renderFn(); }
 function renderDuties(){ renderChips(document.getElementById("dutyChips"), duties, i=>{duties.splice(i,1);renderDuties();});}
 function renderEducationReq(){ renderChips(document.getElementById("educationReqChips"), educationReq, i=>{educationReq.splice(i,1);renderEducationReq();});}
 function renderExperienceReq(){ renderChips(document.getElementById("experienceReqChips"), experienceReq, i=>{experienceReq.splice(i,1);renderExperienceReq();});}
-function renderDayShifts(){ renderChips(document.getElementById("dayShiftChips"), dayShifts, i=>{dayShifts.splice(i,1);renderDayShifts();});}
 addDuty.addEventListener("click",()=>addChipValue("dutyInput", duties, renderDuties));
 addEducationReq.addEventListener("click",()=>addChipValue("educationReqInput", educationReq, renderEducationReq));
 addExperienceReq.addEventListener("click",()=>addChipValue("experienceReqInput", experienceReq, renderExperienceReq));
-addDayShift.addEventListener("click",()=>addChipValue("daysInput", dayShifts, renderDayShifts));
 jobForm.addEventListener("submit", async (e)=>{
  e.preventDefault();
- const body={company:company.value,title:title.value,duties,education_req:educationReq,experience_req:experienceReq,work_location:work_location.value,remote_scope:remote_scope.value,timezone_hiring_for:timezone_hiring_for.value,timezone_hiring_from:timezone_hiring_from.value,days_shifts:dayShifts,pay_rate:pay_rate.value,job_type:job_type.value};
+ const body={company:company.value,title:title.value,duties,education_req:educationReq,experience_req:experienceReq,work_location:work_location.value,remote_scope:remote_scope.value,timezone_hiring_for:timezone_hiring_for.value,timezone_hiring_from:timezone_hiring_from.value,days_shifts: selectedDays.map(day => `${day}: ${shifts[day] || ""}`),pay_rate:pay_rate.value,job_type:job_type.value};
  const {res,data}=await api("/employer/jobs",{method:"POST",body:JSON.stringify(body)});
  if(!res.ok) return alert(data.error||"Could not post job");
- alert("Job posted"); duties=[]; educationReq=[]; experienceReq=[]; dayShifts=[]; renderDuties(); renderEducationReq(); renderExperienceReq(); renderDayShifts(); jobForm.reset(); loadJobs(); loadApplications();
-});
+ alert("Job posted");
+
+duties = [];
+educationReq = [];
+experienceReq = [];
+
+selectedDays = [];
+shifts = {};
+
+renderDuties();
+renderEducationReq();
+renderExperienceReq();
+renderDayButtons();
+renderShiftInputs();
+
+jobForm.reset();
+loadJobs();
+loadApplications();
+ });
+
+function renderDayButtons() {
+  const root = document.getElementById("daysSelect");
+  root.innerHTML = "";
+
+  weekdays.forEach((day) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = selectedDays.includes(day) ? "small" : "secondary small";
+    btn.textContent = day;
+
+    btn.addEventListener("click", () => {
+      if (selectedDays.includes(day)) {
+        selectedDays = selectedDays.filter((d) => d !== day);
+        delete shifts[day];
+      } else {
+        selectedDays.push(day);
+        shifts[day] = shifts[day] || "";
+      }
+
+      renderDayButtons();
+      renderShiftInputs();
+    });
+
+    root.appendChild(btn);
+  });
+}
+
+function renderShiftInputs() {
+  const root = document.getElementById("shiftsContainer");
+  root.innerHTML = "";
+
+  selectedDays.forEach((day) => {
+    const wrap = document.createElement("div");
+    wrap.className = "entry";
+    wrap.innerHTML = `
+      <h4>${day}</h4>
+      <input placeholder="${day} shift(s)" value="${shifts[day] || ""}" />
+    `;
+
+    const input = wrap.querySelector("input");
+    input.addEventListener("input", (e) => {
+      shifts[day] = e.target.value;
+    });
+
+    root.appendChild(wrap);
+  });
+}
 async function loadJobs(){
  const {res,data}=await api("/employer/jobs"); const root=document.getElementById("jobs"); root.innerHTML="";
  if(!res.ok){root.innerHTML=`<p>${data.error||"Could not load jobs"}</p>`; return;}
@@ -61,6 +126,10 @@ async function loadApplications(){
 (async () => {
   const ok = await confirmAccess();
   if (!ok) return;
+
+  renderDayButtons();
+  renderShiftInputs();
+
   loadJobs();
   loadApplications();
 })();
