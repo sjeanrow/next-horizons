@@ -23,3 +23,6 @@ button.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
 .hidden {
   display: none;
 }
+#authArea.hidden {
+  display: none !important;
+}
