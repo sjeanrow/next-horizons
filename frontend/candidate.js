@@ -51,7 +51,18 @@ document.getElementById("logoutBtn").addEventListener("click", logout);
 setTabs();
 
 const degrees = ["Associate", "Bachelor", "Master", "Doctorate", "Certificate", "Diploma"];
-
+const dutySuggestions = [
+  "Assisted customers with questions and concerns",
+  "Managed scheduling and appointments",
+  "Handled phone, email, and in-person communication",
+  "Maintained accurate records and documentation",
+  "Coordinated with team members to complete daily tasks",
+  "Trained and supported new staff",
+  "Resolved issues in a timely manner",
+  "Processed orders, payments, or transactions",
+  "Organized files, reports, or inventory",
+  "Followed company policies and procedures"
+];
 let desiredTitles = [];
 let desiredDuties = [];
 let languages = [];
@@ -141,8 +152,10 @@ function expTemplate(item, idx) {
       <input placeholder="End year" value="${item.end_year || ""}" data-key="end_year" />
     </div>
     <input placeholder="Add duty" data-duty-input />
-    <button type="button" class="secondary small" data-add-duty>Add duty</button>
-    <div class="chip-wrap" data-duty-chips></div>
+<button type="button" class="secondary small" data-add-duty>Add duty</button>
+<div class="chip-wrap" data-duty-chips></div>
+<p class="muted">Need help describing this role? Click a suggestion below.</p>
+<div class="chip-wrap" data-duty-suggestions></div>
   `;
   el.querySelector(".section-title button").addEventListener("click", () => {
     experiences.splice(idx, 1);
@@ -156,6 +169,7 @@ function expTemplate(item, idx) {
   experiences[idx].duties = experiences[idx].duties || [];
   const dutyInput = el.querySelector("[data-duty-input]");
   const dutyRoot = el.querySelector("[data-duty-chips]");
+  const suggestionRoot = el.querySelector("[data-duty-suggestions]");
   const draw = () => renderChips(dutyRoot, experiences[idx].duties, (i) => {
     experiences[idx].duties.splice(i, 1);
     draw();
@@ -168,6 +182,22 @@ function expTemplate(item, idx) {
     draw();
   });
   draw();
+  suggestionRoot.innerHTML = "";
+dutySuggestions.forEach((suggestion) => {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "secondary small";
+  chip.textContent = suggestion;
+
+  chip.addEventListener("click", () => {
+    if (!experiences[idx].duties.includes(suggestion)) {
+      experiences[idx].duties.push(suggestion);
+      draw();
+    }
+  });
+
+  suggestionRoot.appendChild(chip);
+});
   return el;
 }
 
