@@ -332,7 +332,29 @@ renderPreviousNames();
   renderExperiences();
   renderEducation();
 }
+function updateCandidateSummary(applications) {
+  const counts = {
+    Applied: applications.length,
+    Interviewing: 0,
+    Offered: 0,
+    Accepted: 0,
+    Denied: 0,
+    "No Response": 0
+  };
 
+  applications.forEach((app) => {
+    if (counts[app.status] !== undefined) {
+      counts[app.status]++;
+    }
+  });
+
+  document.getElementById("sumApplied").textContent = counts.Applied;
+  document.getElementById("sumInterviewing").textContent = counts.Interviewing;
+  document.getElementById("sumOffered").textContent = counts.Offered;
+  document.getElementById("sumAccepted").textContent = counts.Accepted;
+  document.getElementById("sumDenied").textContent = counts.Denied;
+  document.getElementById("sumNoResponse").textContent = counts["No Response"];
+}
 async function loadMatches() {
   const { res, data } = await api("/jobs/matches");
   const root = document.getElementById("matches");
@@ -401,6 +423,7 @@ async function loadApplications() {
     root.appendChild(card);
   });
 }
+updateCandidateSummary(data);
 
 (async () => {
   const ok = await confirmAccess();
