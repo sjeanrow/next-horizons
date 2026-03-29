@@ -1,1 +1,59 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Next Horizons - Employer</title><link rel="stylesheet" href="styles.css"/></head><body><div class="wrap"><div class="topbar"><h1>Employer Dashboard</h1><div class="tabs"><button class="secondary small" data-tab="jobTab">Post Job</button><button class="secondary small" data-tab="jobsTab">Your Jobs</button><button class="secondary small" data-tab="applicationsTab">Applications</button><button id="logoutBtn" class="secondary small">Log out</button></div></div><section id="jobTab" class="card"><h2>Post a job</h2><form id="jobForm" class="stack"><div class="row"><input id="company" placeholder="Company" required/><input id="title" placeholder="Job title" required/></div><div class="row"><input id="dutyInput" placeholder="Add duty"/><button type="button" id="addDuty" class="secondary small">Add duty</button></div><div id="dutyChips" class="chip-wrap"></div><div class="row"><input id="educationReqInput" placeholder="Add education requirement"/><button type="button" id="addEducationReq" class="secondary small">Add education requirement</button></div><div id="educationReqChips" class="chip-wrap"></div><div class="row"><input id="experienceReqInput" placeholder="Add job history requirement"/><button type="button" id="addExperienceReq" class="secondary small">Add job history requirement</button></div><div id="experienceReqChips" class="chip-wrap"></div><div class="row"><select id="work_location"><option>Remote</option><option>On-Site</option><option>Hybrid</option></select><input id="remote_scope" placeholder="If remote: in-state only or anywhere?"/></div><div class="row"><input id="timezone_hiring_for" placeholder="Time zone hiring for"/><input id="timezone_hiring_from" placeholder="Time zone hiring from"/></div><div class="row"><input id="daysInput" placeholder="Add work day / shift"/><button type="button" id="addDayShift" class="secondary small">Add day / shift</button></div><div id="dayShiftChips" class="chip-wrap"></div><div class="row"><input id="pay_rate" placeholder="Pay rate / salary"/><select id="job_type"><option>Full-Time</option><option>Part-Time</option><option>Contract</option><option>Internship</option></select></div><button type="submit">Post job</button></form></section><section id="jobsTab" class="card hidden"><h2>Your jobs</h2><div id="jobs"></div></section><section id="applicationsTab" class="card hidden"><h2>Applications</h2><div id="applications"></div></section></div><script src="config.js"></script><script src="employer.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8"/>
+      <meta name="viewport" content="width=device-width,initial-scale=1"/>
+      <title>Next Horizons - Employer</title>
+      <link rel="stylesheet" href="styles.css"/>
+   </head>
+   <body>
+      <div class="wrap">
+         <div class="topbar">
+            <h1>Employer Dashboard</h1>
+            <div class="tabs"><button class="secondary small" data-tab="jobTab">Post Job</button><button class="secondary small" data-tab="jobsTab">Your Jobs</button><button class="secondary small" data-tab="applicationsTab">Applications</button><button id="logoutBtn" class="secondary small">Log out</button></div>
+         </div>
+         <section id="jobTab" class="card">
+            <h2>Post a job</h2>
+            <form id="jobForm" class="stack">
+               <div class="row"><input id="company" placeholder="Company" required/><input id="title" placeholder="Job title" required/></div>
+               <div class="row"><input id="dutyInput" placeholder="Add duty"/><button type="button" id="addDuty" class="secondary small">Add duty</button></div>
+               <div id="dutyChips" class="chip-wrap"></div>
+               <div class="row"><input id="educationReqInput" placeholder="Add education requirement"/><button type="button" id="addEducationReq" class="secondary small">Add education requirement</button></div>
+               <div id="educationReqChips" class="chip-wrap"></div>
+               <div class="row"><input id="experienceReqInput" placeholder="Add job history requirement"/><button type="button" id="addExperienceReq" class="secondary small">Add job history requirement</button></div>
+               <div id="experienceReqChips" class="chip-wrap"></div>
+               <div class="row">
+                  <select id="work_location">
+                     <option>Remote</option>
+                     <option>On-Site</option>
+                     <option>Hybrid</option>
+                  </select>
+                  <input id="remote_scope" placeholder="If remote: in-state only or anywhere?"/>
+               </div>
+               <div class="row"><input id="timezone_hiring_for" placeholder="Time zone hiring for"/><input id="timezone_hiring_from" placeholder="Time zone hiring from"/></div>
+               <div class="row"><input id="daysInput" placeholder="Add work day / shift"/><button type="button" id="addDayShift" class="secondary small">Add day / shift</button></div>
+               <div id="dayShiftChips" class="chip-wrap"></div>
+               <div class="row">
+                  <input id="pay_rate" placeholder="Pay rate / salary"/>
+                  <select id="job_type">
+                     <option>Full-Time</option>
+                     <option>Part-Time</option>
+                     <option>Contract</option>
+                     <option>Internship</option>
+                  </select>
+               </div>
+               <button type="submit">Post job</button>
+            </form>
+         </section>
+         <section id="jobsTab" class="card hidden">
+            <h2>Your jobs</h2>
+            <div id="jobs"></div>
+         </section>
+         <section id="applicationsTab" class="card hidden">
+            <h2>Applications</h2>
+            <div id="applications"></div>
+         </section>
+      </div>
+      <script src="config.js"></script><script src="employer.js"></script>
+   </body>
+</html>
