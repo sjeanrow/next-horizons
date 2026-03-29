@@ -253,8 +253,7 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
     last_name: document.getElementById("last_name").value,
     phone: document.getElementById("phone").value,
     pronouns: document.getElementById("pronouns").value,
-    previous_names: document.getElementById("previous_names").value
-      ? document.getElementById("previous_names").value.split(",").map(x => x.trim()).filter(Boolean) : [],
+    previous_names: previousNames.filter(Boolean),
     job_type: document.getElementById("job_type").value,
     desired_titles: desiredTitles,
     desired_duties: desiredDuties,
@@ -278,7 +277,13 @@ async function loadProfile() {
   document.getElementById("last_name").value = user.last_name || "";
   document.getElementById("phone").value = user.phone || "";
   document.getElementById("pronouns").value = user.pronouns || "";
-  document.getElementById("previous_names").value = (user.previous_names || []).join(", ");
+  previousNames = user.previous_names || [];
+const hasPrevious = previousNames.length > 0;
+
+document.getElementById("has_previous_names").value = hasPrevious ? "yes" : "no";
+document.getElementById("previousNamesSection").classList.toggle("hidden", !hasPrevious);
+
+renderPreviousNames();
   document.getElementById("job_type").value = user.job_type || "";
 
   desiredTitles = user.desired_titles || [];
