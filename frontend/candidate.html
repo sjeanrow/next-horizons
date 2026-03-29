@@ -15,9 +15,29 @@
          <section id="profileTab" class="card">
             <h2>Your profile</h2>
             <form id="profileForm" class="stack">
-               <div class="row"><input id="first_name" placeholder="First name"/><input id="last_name" placeholder="Last name"/></div>
-               <div class="row"><input id="phone" placeholder="Best number to reach at"/><input id="pronouns" placeholder="Pronouns"/></div>
-               <input id="previous_names" placeholder="Previous legal names (optional, comma separated)"/>
+               <div class="row">
+  <input id="first_name" placeholder="First name" />
+  <input id="last_name" placeholder="Last name" />
+</div>
+
+<div class="row">
+  <input id="phone" placeholder="Phone number" />
+  <input id="pronouns" placeholder="Pronouns" />
+</div>
+
+<label>Do you have previous legal names?</label>
+<select id="has_previous_names">
+  <option value="no">No</option>
+  <option value="yes">Yes</option>
+</select>
+
+<div id="previousNamesSection" class="hidden">
+  <div class="section-title">
+    <h3>Previous legal names</h3>
+    <button type="button" id="addPrevName" class="secondary small">Add previous legal name</button>
+  </div>
+  <div id="previousNamesList" class="list"></div>
+</div>
                <div class="row">
                   <select id="job_type">
                      <option value="">What are you looking for?</option>
