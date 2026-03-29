@@ -1,7 +1,24 @@
 
 function token(){return localStorage.getItem("nh_token")}
+function getSitePassword() { return localStorage.getItem("nh_site_password") || ""; }
 function logout(){localStorage.clear();location.href="index.html"}
-async function api(path, options={}){ const res = await fetch(`${window.API_URL}${path}`, {...options, headers: {"Content-Type":"application/json","Authorization":`Bearer ${token()}`,...(options.headers||{})}}); const data = await res.json(); return {res,data};}
+async function confirmAccess() {
+  if (!getSitePassword()) {
+    location.href = "index.html";
+    return false;
+  }
+  const res = await fetch(`${window.API_URL}/beta/check`, {
+    method: "POST",
+    headers: { "x-site-password": getSitePassword() }
+  });
+  if (!res.ok) {
+    localStorage.removeItem("nh_site_password");
+    location.href = "index.html";
+    return false;
+  }
+  return true;
+}
+async function api(path, options={}){ const res = await fetch(`${window.API_URL}${path}`, {...options, headers: {"Content-Type":"application/json","Authorization":`Bearer ${token()}`, "x-site-password": getSitePassword(),...(options.headers||{})}}); const data = await res.json(); return {res,data};}
 function setTabs(){ document.querySelectorAll("[data-tab]").forEach(btn => btn.addEventListener("click",()=>{ document.querySelectorAll("section[id$='Tab']").forEach(s=>s.classList.add("hidden")); document.getElementById(btn.dataset.tab).classList.remove("hidden"); }));}
 function renderChips(root, values, onRemove){ root.innerHTML=""; values.forEach((value,index)=>{ const chip=document.createElement("div"); chip.className="chip"; chip.innerHTML=`<span>${value}</span><button type="button">×</button>`; chip.querySelector("button").addEventListener("click",()=>onRemove(index)); root.appendChild(chip); });}
 
@@ -41,4 +58,9 @@ async function loadApplications(){
  card.querySelector("button").addEventListener("click", async ()=>{ const {res,data}=await api(`/employer/applications/${app.id}`,{method:"PATCH",body:JSON.stringify({status:select.value})}); if(!res.ok) return alert(data.error||"Could not update status"); alert("Status updated"); loadApplications();});
  root.appendChild(card); });
 }
-loadJobs(); loadApplications();
+(async () => {
+  const ok = await confirmAccess();
+  if (!ok) return;
+  loadJobs();
+  loadApplications();
+})();
