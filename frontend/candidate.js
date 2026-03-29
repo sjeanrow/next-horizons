@@ -2,6 +2,7 @@
 function token() { return localStorage.getItem("nh_token"); }
 function getSitePassword() { return localStorage.getItem("nh_site_password") || ""; }
 function logout() { localStorage.clear(); location.href = "index.html"; }
+
 async function api(path, options = {}) {
   const res = await fetch(`${window.API_URL}${path}`, {
     ...options,
@@ -14,23 +15,28 @@ async function api(path, options = {}) {
   });
   const data = await res.json();
   return { res, data };
+}
+
 async function confirmAccess() {
   if (!getSitePassword()) {
     location.href = "index.html";
     return false;
   }
+
   const res = await fetch(`${window.API_URL}/beta/check`, {
     method: "POST",
     headers: { "x-site-password": getSitePassword() }
   });
+
   if (!res.ok) {
     localStorage.removeItem("nh_site_password");
     location.href = "index.html";
     return false;
   }
+
   return true;
 }
-}
+
 function setTabs() {
   document.querySelectorAll("[data-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -53,6 +59,7 @@ let certificates = [];
 let military = [];
 let experiences = [];
 let education = [];
+let previousNames = [];
 
 function renderChips(root, values, onRemove) {
   root.innerHTML = "";
@@ -87,6 +94,35 @@ function renderCertificates() {
 }
 function renderMilitary() {
   renderChips(document.getElementById("militaryChips"), military, (i) => { military.splice(i,1); renderMilitary(); });
+}
+
+function renderPreviousNames() {
+  const root = document.getElementById("previousNamesList");
+  root.innerHTML = "";
+
+  previousNames.forEach((name, index) => {
+    const row = document.createElement("div");
+    row.className = "entry";
+    row.innerHTML = `
+      <div class="section-title">
+        <h4>Previous legal name ${index + 1}</h4>
+        <button type="button" class="secondary small">Remove</button>
+      </div>
+      <input placeholder="Previous legal name" value="${name || ""}" />
+    `;
+
+    const input = row.querySelector("input");
+    input.addEventListener("input", (e) => {
+      previousNames[index] = e.target.value;
+    });
+
+    row.querySelector("button").addEventListener("click", () => {
+      previousNames.splice(index, 1);
+      renderPreviousNames();
+    });
+
+    root.appendChild(row);
+  });
 }
 
 function expTemplate(item, idx) {
@@ -193,6 +229,21 @@ document.getElementById("addExperience").addEventListener("click", () => {
 document.getElementById("addEducation").addEventListener("click", () => {
   education.push({ college_name:"", years_attended:"", degree:"", field_of_study:"" });
   renderEducation();
+});
+
+document.getElementById("has_previous_names").addEventListener("change", (e) => {
+  const show = e.target.value === "yes";
+  document.getElementById("previousNamesSection").classList.toggle("hidden", !show);
+
+  if (!show) {
+    previousNames = [];
+    renderPreviousNames();
+  }
+});
+
+document.getElementById("addPrevName").addEventListener("click", () => {
+  previousNames.push("");
+  renderPreviousNames();
 });
 
 document.getElementById("profileForm").addEventListener("submit", async (e) => {
