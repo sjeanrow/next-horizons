@@ -16,7 +16,7 @@ button.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
 .tabs{display:flex;gap:10px;flex-wrap:wrap}.hidden{display:none}
 @media (max-width:760px){.grid.two,.row,.row.four{grid-template-columns:1fr}.hero h1{font-size:34px}}
 .gate {
-  .hidden {
+.hidden {
   display: none;
 }
   max-width: 520px;
