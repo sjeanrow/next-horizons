@@ -31,8 +31,11 @@
                   <input id="remote_scope" placeholder="If remote: in-state only or anywhere?"/>
                </div>
                <div class="row"><input id="timezone_hiring_for" placeholder="Time zone hiring for"/><input id="timezone_hiring_from" placeholder="Time zone hiring from"/></div>
-               <div class="row"><input id="daysInput" placeholder="Add work day / shift"/><button type="button" id="addDayShift" class="secondary small">Add day / shift</button></div>
-               <div id="dayShiftChips" class="chip-wrap"></div>
+               <label>Select work days</label>
+<div id="daysSelect" class="chip-wrap"></div>
+
+<label>Enter shifts for selected days</label>
+<div id="shiftsContainer" class="list"></div>
                <div class="row">
                   <input id="pay_rate" placeholder="Pay rate / salary"/>
                   <select id="job_type">
