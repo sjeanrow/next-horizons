@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -14,6 +13,7 @@ app.use(express.json({ limit: "2mb" }));
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+const SITE_PASSWORD = process.env.SITE_PASSWORD || "";
 
 const supabase = createClient(
   process.env.SUPABASE_URL || "",
@@ -26,6 +26,22 @@ function makeToken(user) {
     JWT_SECRET,
     { expiresIn: "7d" }
   );
+}
+
+function betaProtection(req, res, next) {
+  const openPaths = ["/", "/beta/check"];
+  if (openPaths.includes(req.path)) return next();
+
+  if (!SITE_PASSWORD) {
+    return res.status(500).json({ error: "SITE_PASSWORD is not configured on the server." });
+  }
+
+  const supplied = req.headers["x-site-password"];
+  if (!supplied || supplied !== SITE_PASSWORD) {
+    return res.status(401).json({ error: "Site password required." });
+  }
+
+  next();
 }
 
 function authRequired(req, res, next) {
@@ -57,7 +73,6 @@ async function ensureEmployerMetrics(employerId) {
     .maybeSingle();
 
   if (fetchError) throw fetchError;
-
   if (existing) return existing;
 
   const { data, error } = await supabase
@@ -74,7 +89,6 @@ async function refreshEmployerProbation(employerId) {
   const metrics = await ensureEmployerMetrics(employerId);
   const total = Number(metrics.total_applications || 0);
   const responded = Number(metrics.responded_applications || 0);
-
   const probation = total >= 4 && total > 0 && (responded / total) < 0.5;
 
   const { error } = await supabase
@@ -119,8 +133,19 @@ async function updateNoResponseStatuses() {
 }
 
 app.get("/", (_req, res) => {
-  res.json({ ok: true, app: "Next Horizons API v3" });
+  res.json({ ok: true, app: "Next Horizons API v4" });
 });
+
+app.post("/beta/check", (req, res) => {
+  const supplied = req.headers["x-site-password"];
+  if (!SITE_PASSWORD) {
+    return res.status(500).json({ error: "SITE_PASSWORD is not configured on the server." });
+  }
+  if (supplied && supplied === SITE_PASSWORD) return res.json({ ok: true });
+  return res.status(401).json({ error: "Incorrect site password." });
+});
+
+app.use(betaProtection);
 
 app.post("/auth/signup", async (req, res) => {
   try {
@@ -172,7 +197,6 @@ app.get("/me", authRequired, async (req, res) => {
     .select("id, first_name, last_name, email, role, phone, pronouns, previous_names, job_type, desired_titles, desired_duties")
     .eq("id", req.user.id)
     .single();
-
   if (error) return res.status(500).json({ error: error.message });
   return res.json(data);
 });
@@ -185,7 +209,6 @@ app.get("/candidate/profile", authRequired, async (req, res) => {
       .select("id, first_name, last_name, email, phone, pronouns, previous_names, job_type, desired_titles, desired_duties")
       .eq("id", req.user.id)
       .single();
-
     if (userError) return res.status(500).json({ error: userError.message });
 
     const [exp, edu, lang, certs, mil] = await Promise.all([
@@ -215,7 +238,6 @@ app.get("/candidate/profile", authRequired, async (req, res) => {
 
 app.post("/candidate/profile", authRequired, async (req, res) => {
   if (req.user.role !== "candidate") return res.status(403).json({ error: "Candidate only" });
-
   try {
     const candidateId = req.user.id;
     const {
@@ -225,19 +247,16 @@ app.post("/candidate/profile", authRequired, async (req, res) => {
       certificates = [], military = []
     } = req.body;
 
-    const updateUser = await supabase
-      .from("users")
-      .update({
-        first_name: first_name || null,
-        last_name: last_name || null,
-        phone: phone || null,
-        pronouns: pronouns || null,
-        previous_names: previous_names || [],
-        job_type: job_type || null,
-        desired_titles: desired_titles || [],
-        desired_duties: desired_duties || []
-      })
-      .eq("id", candidateId);
+    const updateUser = await supabase.from("users").update({
+      first_name: first_name || null,
+      last_name: last_name || null,
+      phone: phone || null,
+      pronouns: pronouns || null,
+      previous_names: previous_names || [],
+      job_type: job_type || null,
+      desired_titles: desired_titles || [],
+      desired_duties: desired_duties || []
+    }).eq("id", candidateId);
 
     if (updateUser.error) return res.status(500).json({ error: updateUser.error.message });
 
@@ -270,7 +289,6 @@ app.post("/candidate/profile", authRequired, async (req, res) => {
 
 app.post("/employer/jobs", authRequired, async (req, res) => {
   if (req.user.role !== "employer") return res.status(403).json({ error: "Employer only" });
-
   try {
     const metrics = await ensureEmployerMetrics(req.user.id);
     if (metrics.probation) {
@@ -304,13 +322,7 @@ app.post("/employer/jobs", authRequired, async (req, res) => {
 
 app.get("/employer/jobs", authRequired, async (req, res) => {
   if (req.user.role !== "employer") return res.status(403).json({ error: "Employer only" });
-
-  const { data, error } = await supabase
-    .from("jobs")
-    .select("*")
-    .eq("employer_id", req.user.id)
-    .order("id", { ascending: false });
-
+  const { data, error } = await supabase.from("jobs").select("*").eq("employer_id", req.user.id).order("id", { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   return res.json(data || []);
 });
@@ -320,11 +332,7 @@ app.get("/employer/applications", authRequired, async (req, res) => {
 
   await updateNoResponseStatuses();
 
-  const { data: jobs, error: jobsError } = await supabase
-    .from("jobs")
-    .select("id, title, company")
-    .eq("employer_id", req.user.id);
-
+  const { data: jobs, error: jobsError } = await supabase.from("jobs").select("id, title, company").eq("employer_id", req.user.id);
   if (jobsError) return res.status(500).json({ error: jobsError.message });
   if (!jobs.length) return res.json([]);
 
@@ -334,14 +342,12 @@ app.get("/employer/applications", authRequired, async (req, res) => {
     .select("id, job_id, candidate_id, applied_at, status, auto_applied, last_updated")
     .in("job_id", jobIds)
     .order("applied_at", { ascending: false });
-
   if (appError) return res.status(500).json({ error: appError.message });
 
   const candidateIds = [...new Set((applications || []).map((a) => a.candidate_id))];
   const { data: candidates, error: candError } = candidateIds.length
     ? await supabase.from("users").select("id, first_name, last_name, email").in("id", candidateIds)
     : { data: [], error: null };
-
   if (candError) return res.status(500).json({ error: candError.message });
 
   const jobMap = Object.fromEntries(jobs.map((j) => [j.id, j]));
@@ -362,20 +368,10 @@ app.patch("/employer/applications/:id", authRequired, async (req, res) => {
   const allowed = ["Pending", "Interviewing", "Denied", "Offered", "Accepted", "No Response"];
   if (!allowed.includes(status)) return res.status(400).json({ error: "Invalid status" });
 
-  const { data: appRow, error: appError } = await supabase
-    .from("applications")
-    .select("id, job_id")
-    .eq("id", applicationId)
-    .single();
-
+  const { data: appRow, error: appError } = await supabase.from("applications").select("id, job_id").eq("id", applicationId).single();
   if (appError) return res.status(500).json({ error: appError.message });
 
-  const { data: job, error: jobError } = await supabase
-    .from("jobs")
-    .select("id, employer_id")
-    .eq("id", appRow.job_id)
-    .single();
-
+  const { data: job, error: jobError } = await supabase.from("jobs").select("id, employer_id").eq("id", appRow.job_id).single();
   if (jobError) return res.status(500).json({ error: jobError.message });
   if (job.employer_id !== req.user.id) return res.status(403).json({ error: "Not your application" });
 
@@ -385,23 +381,13 @@ app.patch("/employer/applications/:id", authRequired, async (req, res) => {
     last_employer_action: new Date().toISOString()
   };
 
-  const { data, error } = await supabase
-    .from("applications")
-    .update(updatePayload)
-    .eq("id", applicationId)
-    .select("*")
-    .single();
-
+  const { data, error } = await supabase.from("applications").update(updatePayload).eq("id", applicationId).select("*").single();
   if (error) return res.status(500).json({ error: error.message });
 
   try {
     const metrics = await ensureEmployerMetrics(req.user.id);
     const newResponded = Number(metrics.responded_applications || 0) + 1;
-    const { error: metricsError } = await supabase
-      .from("employer_metrics")
-      .update({ responded_applications: newResponded })
-      .eq("employer_id", req.user.id);
-
+    const { error: metricsError } = await supabase.from("employer_metrics").update({ responded_applications: newResponded }).eq("employer_id", req.user.id);
     if (metricsError) throw metricsError;
     await refreshEmployerProbation(req.user.id);
   } catch {}
@@ -414,45 +400,23 @@ app.post("/applications/:id/followup", authRequired, async (req, res) => {
 
   const applicationId = Number(req.params.id);
 
-  const { data: application, error: appError } = await supabase
-    .from("applications")
-    .select("id, candidate_id, job_id")
-    .eq("id", applicationId)
-    .single();
-
+  const { data: application, error: appError } = await supabase.from("applications").select("id, candidate_id, job_id").eq("id", applicationId).single();
   if (appError) return res.status(500).json({ error: appError.message });
   if (application.candidate_id !== req.user.id) return res.status(403).json({ error: "Not your application" });
 
-  const { data: job, error: jobError } = await supabase
-    .from("jobs")
-    .select("id, employer_id, title, company")
-    .eq("id", application.job_id)
-    .single();
-
+  const { data: job, error: jobError } = await supabase.from("jobs").select("id, employer_id, title, company").eq("id", application.job_id).single();
   if (jobError) return res.status(500).json({ error: jobError.message });
 
-  const { data: user, error: userError } = await supabase
-    .from("users")
-    .select("first_name, last_name")
-    .eq("id", req.user.id)
-    .single();
-
+  const { data: user, error: userError } = await supabase.from("users").select("first_name, last_name").eq("id", req.user.id).single();
   if (userError) return res.status(500).json({ error: userError.message });
 
-  const { error: notificationError } = await supabase
-    .from("notifications")
-    .insert({
-      user_id: job.employer_id,
-      message: `${user.first_name} ${user.last_name} followed up on their application for ${job.title}${job.company ? ` at ${job.company}` : ""}.`
-    });
-
+  const { error: notificationError } = await supabase.from("notifications").insert({
+    user_id: job.employer_id,
+    message: `${user.first_name} ${user.last_name} followed up on their application for ${job.title}${job.company ? ` at ${job.company}` : ""}.`
+  });
   if (notificationError) return res.status(500).json({ error: notificationError.message });
 
-  const { error: updateError } = await supabase
-    .from("applications")
-    .update({ last_updated: new Date().toISOString() })
-    .eq("id", applicationId);
-
+  const { error: updateError } = await supabase.from("applications").update({ last_updated: new Date().toISOString() }).eq("id", applicationId);
   if (updateError) return res.status(500).json({ error: updateError.message });
 
   return res.json({ ok: true });
@@ -490,14 +454,9 @@ app.get("/jobs/matches", authRequired, async (req, res) => {
     .select("job_type, desired_titles, desired_duties")
     .eq("id", req.user.id)
     .single();
-
   if (candidateError) return res.status(500).json({ error: candidateError.message });
 
-  const { data: jobs, error: jobsError } = await supabase
-    .from("jobs")
-    .select("*")
-    .eq("verified", true);
-
+  const { data: jobs, error: jobsError } = await supabase.from("jobs").select("*").eq("verified", true);
   if (jobsError) return res.status(500).json({ error: jobsError.message });
 
   const desiredTitles = (candidate.desired_titles || []).map((x) => String(x).toLowerCase());
@@ -521,41 +480,24 @@ app.post("/jobs/:id/apply", authRequired, async (req, res) => {
 
   const jobId = Number(req.params.id);
 
-  const { data: existing } = await supabase
-    .from("applications")
-    .select("id")
-    .eq("job_id", jobId)
-    .eq("candidate_id", req.user.id)
-    .maybeSingle();
-
+  const { data: existing } = await supabase.from("applications").select("id").eq("job_id", jobId).eq("candidate_id", req.user.id).maybeSingle();
   if (existing) return res.status(400).json({ error: "Already applied" });
 
   const { data: allApps } = await supabase.from("applications").select("id").eq("job_id", jobId);
-  if ((allApps || []).length >= 20) {
-    return res.status(400).json({ error: "This job has reached the 20-application cap." });
-  }
+  if ((allApps || []).length >= 20) return res.status(400).json({ error: "This job has reached the 20-application cap." });
 
-  const { data: job, error: jobError } = await supabase
-    .from("jobs")
-    .select("employer_id")
-    .eq("id", jobId)
-    .single();
-
+  const { data: job, error: jobError } = await supabase.from("jobs").select("employer_id").eq("id", jobId).single();
   if (jobError) return res.status(500).json({ error: jobError.message });
 
   const now = new Date().toISOString();
-  const { data, error } = await supabase
-    .from("applications")
-    .insert({
-      job_id: jobId,
-      candidate_id: req.user.id,
-      status: "Pending",
-      auto_applied: false,
-      last_updated: now,
-      last_employer_action: null
-    })
-    .select("*")
-    .single();
+  const { data, error } = await supabase.from("applications").insert({
+    job_id: jobId,
+    candidate_id: req.user.id,
+    status: "Pending",
+    auto_applied: false,
+    last_updated: now,
+    last_employer_action: null
+  }).select("*").single();
 
   if (error) return res.status(500).json({ error: error.message });
 
@@ -575,5 +517,5 @@ app.post("/jobs/:id/apply", authRequired, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Next Horizons API v3 running on port ${PORT}`);
+  console.log(`Next Horizons API v4 running on port ${PORT}`);
 });
