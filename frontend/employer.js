@@ -88,16 +88,23 @@ function renderDayButtons() {
   });
 }
   function updateEmployerSummary() {
+  const jobsEl = document.getElementById("sumJobs");
+  const applicantsEl = document.getElementById("sumApplicants");
+  const pendingEl = document.getElementById("sumPending");
+  const responseEl = document.getElementById("sumResponseRate");
+
+  if (!jobsEl || !applicantsEl || !pendingEl || !responseEl) return;
+
   const activeJobs = employerJobs.length;
   const totalApplicants = employerApplications.length;
   const pendingResponses = employerApplications.filter(a => a.status === "Pending").length;
   const responded = employerApplications.filter(a => a.status !== "Pending").length;
   const responseRate = totalApplicants ? Math.round((responded / totalApplicants) * 100) : 0;
 
-  document.getElementById("sumJobs").textContent = activeJobs;
-  document.getElementById("sumApplicants").textContent = totalApplicants;
-  document.getElementById("sumPending").textContent = pendingResponses;
-  document.getElementById("sumResponseRate").textContent = `${responseRate}%`;
+  jobsEl.textContent = activeJobs;
+  applicantsEl.textContent = totalApplicants;
+  pendingEl.textContent = pendingResponses;
+  responseEl.textContent = `${responseRate}%`;
 }
 
 function renderShiftInputs() {
