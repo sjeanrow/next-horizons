@@ -333,6 +333,15 @@ renderPreviousNames();
   renderEducation();
 }
 function updateCandidateSummary(applications) {
+  const appliedEl = document.getElementById("sumApplied");
+  const interviewingEl = document.getElementById("sumInterviewing");
+  const offeredEl = document.getElementById("sumOffered");
+  const acceptedEl = document.getElementById("sumAccepted");
+  const deniedEl = document.getElementById("sumDenied");
+  const noResponseEl = document.getElementById("sumNoResponse");
+
+  if (!appliedEl || !interviewingEl || !offeredEl || !acceptedEl || !deniedEl || !noResponseEl) return;
+
   const counts = {
     Applied: applications.length,
     Interviewing: 0,
@@ -348,13 +357,14 @@ function updateCandidateSummary(applications) {
     }
   });
 
-  document.getElementById("sumApplied").textContent = counts.Applied;
-  document.getElementById("sumInterviewing").textContent = counts.Interviewing;
-  document.getElementById("sumOffered").textContent = counts.Offered;
-  document.getElementById("sumAccepted").textContent = counts.Accepted;
-  document.getElementById("sumDenied").textContent = counts.Denied;
-  document.getElementById("sumNoResponse").textContent = counts["No Response"];
+  appliedEl.textContent = counts.Applied;
+  interviewingEl.textContent = counts.Interviewing;
+  offeredEl.textContent = counts.Offered;
+  acceptedEl.textContent = counts.Accepted;
+  deniedEl.textContent = counts.Denied;
+  noResponseEl.textContent = counts["No Response"];
 }
+
 async function loadMatches() {
   const { res, data } = await api("/jobs/matches");
   const root = document.getElementById("matches");
@@ -386,8 +396,17 @@ async function loadApplications() {
   const { res, data } = await api("/candidate/applications");
   const root = document.getElementById("applications");
   root.innerHTML = "";
-  if (!res.ok) { root.innerHTML = `<p>${data.error || "Could not load applications"}</p>`; return; }
-  if (!data.length) { root.innerHTML = "<p>You haven't applied to any jobs yet.</p>"; return; }
+  if (!res.ok) {
+  root.innerHTML = `<p>${data.error || "Could not load applications"}</p>`;
+  updateCandidateSummary([]);
+  return;
+}
+
+if (!data.length) {
+  root.innerHTML = "<p>You haven't applied to any jobs yet.</p>";
+  updateCandidateSummary([]);
+  return;
+}
 
   data.forEach((app) => {
     const card = document.createElement("div");
@@ -422,8 +441,9 @@ async function loadApplications() {
     }
     root.appendChild(card);
   });
+  updateCandidateSummary(data);
 }
-updateCandidateSummary(data);
+
 
 (async () => {
   const ok = await confirmAccess();
