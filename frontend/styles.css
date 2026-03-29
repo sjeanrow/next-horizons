@@ -15,3 +15,11 @@ button.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
 .badge-Pending{background:#fff4db}.badge-Interviewing{background:#e3f2fd}.badge-Denied{background:#fde8e8}.badge-Offered{background:#e7f7ed}.badge-Accepted{background:#dff5e1}.badge-No\ Response{background:#f0f1f5}
 .tabs{display:flex;gap:10px;flex-wrap:wrap}.hidden{display:none}
 @media (max-width:760px){.grid.two,.row,.row.four{grid-template-columns:1fr}.hero h1{font-size:34px}}
+.gate {
+  max-width: 520px;
+  margin: 48px auto 0;
+}
+
+.hidden {
+  display: none;
+}
