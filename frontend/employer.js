@@ -110,6 +110,11 @@ if (trustEl) trustEl.textContent = trust.label;
   responseEl.textContent = `${responseRate}%`;
 
     const probationWarning = document.getElementById("probationWarning");
+    const postBtn = document.getElementById("postJobBtn");
+if (postBtn) {
+  postBtn.disabled = isProbation;
+  postBtn.textContent = isProbation ? "Posting disabled during review" : "Post job";
+}
 
 const isProbation =
   employerApplications.length >= 4 &&
