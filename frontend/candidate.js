@@ -389,14 +389,14 @@ async function loadMatches() {
     const card = document.createElement("div");
     card.className = "job";
 
-    const fakeRate = Math.floor(Math.random() * 100);
-    const trust = getEmployerTrustLabel(fakeRate);
+    const realRate = Number(job.employer_response_rate || 0);
+const trust = getEmployerTrustLabel(realRate);
 
     card.innerHTML = `
       <h3>${job.title}</h3>
       <p><strong>${job.company || "Employer"}</strong></p>
       <div class="trust-badge trust-${trust.tone}">
-        ${trust.label} (${fakeRate}%)
+        ${trust.label} (${realRate}%)
       </div>
       <p>${job.job_type || ""} · ${job.work_location || ""}</p>
       <p><strong>Match score:</strong> ${job.match_score}</p>
