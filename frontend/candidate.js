@@ -238,6 +238,11 @@ function eduTemplate(item, idx) {
   });
   return el;
 }
+function getEmployerTrustLabel(responseRate) {
+  if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
+  if (responseRate >= 40) return { label: "Needs Attention", tone: "warn" };
+  return { label: "At Risk", tone: "bad" };
+}
 
 function renderEducation() {
   const root = document.getElementById("educationList");
@@ -375,10 +380,22 @@ async function loadMatches() {
   data.forEach((job) => {
     const card = document.createElement("div");
     card.className = "job";
-    card.innerHTML = `
-      <h3>${job.title}</h3>
-      <p><strong>${job.company || "Employer"}</strong> · ${job.job_type || ""} · ${job.work_location || ""}</p>
-      <p><strong>Match score:</strong> ${job.match_score}</p>
+   const fakeRate = Math.floor(Math.random() * 100);
+const trust = getEmployerTrustLabel(fakeRate);
+
+card.innerHTML = `
+  <h3>${job.title}</h3>
+  <p><strong>${job.company || "Employer"}</strong></p>
+
+  <div class="trust-badge trust-${trust.tone}">
+    ${trust.label} (${fakeRate}%)
+  </div>
+
+  <p>${job.job_type || ""} · ${job.work_location || ""}</p>
+  <p><strong>Match score:</strong> ${job.match_score}</p>
+  <div class="chip-wrap">${(job.duties || []).map((d) => `<span class="pill">${d}</span>`).join("")}</div>
+  <button>Apply now</button>
+`;
       <div class="chip-wrap">${(job.duties || []).map((d) => `<span class="pill">${d}</span>`).join("")}</div>
       <button>Apply now</button>
     `;
