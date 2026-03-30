@@ -374,39 +374,46 @@ async function loadMatches() {
   const { res, data } = await api("/jobs/matches");
   const root = document.getElementById("matches");
   root.innerHTML = "";
-  if (!res.ok) { root.innerHTML = `<p>${data.error || "Could not load matches"}</p>`; return; }
-  if (!data.length) { root.innerHTML = "<p>No matches yet. Try adding desired job titles or duties.</p>"; return; }
+
+  if (!res.ok) {
+    root.innerHTML = `<p>${data.error || "Could not load matches"}</p>`;
+    return;
+  }
+
+  if (!data.length) {
+    root.innerHTML = "<p>No matches yet. Try adding desired job titles or duties.</p>";
+    return;
+  }
 
   data.forEach((job) => {
     const card = document.createElement("div");
     card.className = "job";
-   const fakeRate = Math.floor(Math.random() * 100);
-const trust = getEmployerTrustLabel(fakeRate);
 
-card.innerHTML = `
-  <h3>${job.title}</h3>
-  <p><strong>${job.company || "Employer"}</strong></p>
+    const fakeRate = Math.floor(Math.random() * 100);
+    const trust = getEmployerTrustLabel(fakeRate);
 
-  <div class="trust-badge trust-${trust.tone}">
-    ${trust.label} (${fakeRate}%)
-  </div>
-
-  <p>${job.job_type || ""} · ${job.work_location || ""}</p>
-  <p><strong>Match score:</strong> ${job.match_score}</p>
-  <div class="chip-wrap">${(job.duties || []).map((d) => `<span class="pill">${d}</span>`).join("")}</div>
-  <button>Apply now</button>
-`;
+    card.innerHTML = `
+      <h3>${job.title}</h3>
+      <p><strong>${job.company || "Employer"}</strong></p>
+      <div class="trust-badge trust-${trust.tone}">
+        ${trust.label} (${fakeRate}%)
+      </div>
+      <p>${job.job_type || ""} · ${job.work_location || ""}</p>
+      <p><strong>Match score:</strong> ${job.match_score}</p>
       <div class="chip-wrap">${(job.duties || []).map((d) => `<span class="pill">${d}</span>`).join("")}</div>
       <button>Apply now</button>
     `;
+
     card.querySelector("button").addEventListener("click", async () => {
-      const { res, data } = await api(`/jobs/${job.id}/apply`, { method:"POST" });
+      const { res, data } = await api(`/jobs/${job.id}/apply`, { method: "POST" });
       if (!res.ok) return alert(data.error || "Could not apply");
       alert("Applied");
       loadApplications();
     });
+
     root.appendChild(card);
   });
+}
 }
 
 async function loadApplications() {
