@@ -87,7 +87,7 @@ function renderDayButtons() {
     root.appendChild(btn);
   });
 }
-  function updateEmployerSummary() {
+ function updateEmployerSummary() {
   const jobsEl = document.getElementById("sumJobs");
   const applicantsEl = document.getElementById("sumApplicants");
   const pendingEl = document.getElementById("sumPending");
@@ -100,28 +100,30 @@ function renderDayButtons() {
   const pendingResponses = employerApplications.filter(a => a.status === "Pending").length;
   const responded = employerApplications.filter(a => a.status !== "Pending").length;
   const responseRate = totalApplicants ? Math.round((responded / totalApplicants) * 100) : 0;
-    const trust = getEmployerTrustLabel(responseRate);
-const trustEl = document.getElementById("sumTrustLabel");
-if (trustEl) trustEl.textContent = trust.label;
+
+  const isProbation =
+    employerApplications.length >= 4 &&
+    employerApplications.filter(a => a.status !== "Pending").length / employerApplications.length < 0.5;
+
+  const trust = getEmployerTrustLabel(responseRate);
+  const trustEl = document.getElementById("sumTrustLabel");
+  if (trustEl) trustEl.textContent = trust.label;
 
   jobsEl.textContent = activeJobs;
   applicantsEl.textContent = totalApplicants;
   pendingEl.textContent = pendingResponses;
   responseEl.textContent = `${responseRate}%`;
 
-    const probationWarning = document.getElementById("probationWarning");
-    const postBtn = document.getElementById("postJobBtn");
-if (postBtn) {
-  postBtn.disabled = isProbation;
-  postBtn.textContent = isProbation ? "Posting disabled during review" : "Post job";
-}
+  const probationWarning = document.getElementById("probationWarning");
+  if (probationWarning) {
+    probationWarning.classList.toggle("hidden", !isProbation);
+  }
 
-const isProbation =
-  employerApplications.length >= 4 &&
-  employerApplications.filter(a => a.status !== "Pending").length / employerApplications.length < 0.5;
-
-if (probationWarning) {
-  probationWarning.classList.toggle("hidden", !isProbation);
+  const postBtn = document.getElementById("postJobBtn");
+  if (postBtn) {
+    postBtn.disabled = isProbation;
+    postBtn.textContent = isProbation ? "Posting disabled during review" : "Post job";
+  }
 }
     
 function getEmployerTrustLabel(responseRate) {
