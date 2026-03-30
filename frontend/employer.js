@@ -108,7 +108,17 @@ if (trustEl) trustEl.textContent = trust.label;
   applicantsEl.textContent = totalApplicants;
   pendingEl.textContent = pendingResponses;
   responseEl.textContent = `${responseRate}%`;
+
+    const probationWarning = document.getElementById("probationWarning");
+
+const isProbation =
+  employerApplications.length >= 4 &&
+  employerApplications.filter(a => a.status !== "Pending").length / employerApplications.length < 0.5;
+
+if (probationWarning) {
+  probationWarning.classList.toggle("hidden", !isProbation);
 }
+    
 function getEmployerTrustLabel(responseRate) {
   if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
   if (responseRate >= 40) return { label: "Needs Attention", tone: "warn" };
