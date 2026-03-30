@@ -100,11 +100,19 @@ function renderDayButtons() {
   const pendingResponses = employerApplications.filter(a => a.status === "Pending").length;
   const responded = employerApplications.filter(a => a.status !== "Pending").length;
   const responseRate = totalApplicants ? Math.round((responded / totalApplicants) * 100) : 0;
+    const trust = getEmployerTrustLabel(responseRate);
+const trustEl = document.getElementById("sumTrustLabel");
+if (trustEl) trustEl.textContent = trust.label;
 
   jobsEl.textContent = activeJobs;
   applicantsEl.textContent = totalApplicants;
   pendingEl.textContent = pendingResponses;
   responseEl.textContent = `${responseRate}%`;
+}
+function getEmployerTrustLabel(responseRate) {
+  if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
+  if (responseRate >= 40) return { label: "Needs Attention", tone: "warn" };
+  return { label: "At Risk", tone: "bad" };
 }
 
 function renderShiftInputs() {
