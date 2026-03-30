@@ -414,7 +414,6 @@ async function loadMatches() {
     root.appendChild(card);
   });
 }
-}
 
 async function loadApplications() {
   const { res, data } = await api("/candidate/applications");
