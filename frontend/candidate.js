@@ -238,10 +238,11 @@ function eduTemplate(item, idx) {
   });
   return el;
 }
-function getEmployerTrustLabel(responseRate) {
+function getEmployerTrustLabel(responseRate, totalApplications = 0, probation = false) {
+  if (probation) return { label: "Under Review", tone: "bad" };
+  if (totalApplications < 3) return { label: "New Employer", tone: "new" };
   if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
-  if (responseRate >= 40) return { label: "Needs Attention", tone: "warn" };
-  return { label: "At Risk", tone: "bad" };
+  return { label: "Needs Attention", tone: "warn" };
 }
 
 function renderEducation() {
