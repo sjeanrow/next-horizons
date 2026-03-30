@@ -390,13 +390,15 @@ async function loadMatches() {
     card.className = "job";
 
     const realRate = Number(job.employer_response_rate || 0);
-const trust = getEmployerTrustLabel(realRate);
+    const totalApps = Number(job.employer_total_applications || 0);
+const probation = !!job.employer_probation;
+const trust = getEmployerTrustLabel(realRate, totalApps, probation);
 
     card.innerHTML = `
       <h3>${job.title}</h3>
       <p><strong>${job.company || "Employer"}</strong></p>
       <div class="trust-badge trust-${trust.tone}">
-        ${trust.label} (${realRate}%)
+        ${trust.label}${totalApps >= 3 && !probation ? ` (${realRate}%)` : ""}
       </div>
       <p>${job.job_type || ""} · ${job.work_location || ""}</p>
       <p><strong>Match score:</strong> ${job.match_score}</p>
