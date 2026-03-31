@@ -251,6 +251,10 @@ function getEmployerTrustMessage(label) {
   if (label === "Fast Responder") return "Usually responds reliably.";
   return "";
 }
+function getMatchPercent(score) {
+  const capped = Math.min(Number(score || 0), 10);
+  return Math.round((capped / 10) * 100);
+}
 
 function renderEducation() {
   const root = document.getElementById("educationList");
