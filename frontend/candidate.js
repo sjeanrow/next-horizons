@@ -399,40 +399,51 @@ async function loadMatches() {
 
     const realRate = Number(job.employer_response_rate || 0);
     const totalApps = Number(job.employer_total_applications || 0);
-const probation = !!job.employer_probation;
-const trust = getEmployerTrustLabel(realRate, totalApps, probation);
+    const probation = !!job.employer_probation;
+    const trust = getEmployerTrustLabel(realRate, totalApps, probation);
     const trustMessage = getEmployerTrustMessage(trust.label);
 
     card.innerHTML = `
       <h3>${job.title}</h3>
       <p><strong>${job.company || "Employer"}</strong></p>
+
       <div class="trust-badge trust-${trust.tone}">
         ${trust.label}${totalApps >= 3 && !probation ? ` (${realRate}%)` : ""}
       </div>
+
       <p class="muted">${trustMessage}</p>
       <p>${job.job_type || ""} · ${job.work_location || ""}</p>
       <p><strong>Match score:</strong> ${job.match_score}</p>
 
-${job.top_match_reason ? `
-  <div class="top-reason">
-    ⭐ ${job.top_match_reason}
-  </div>
-` : ""}
+      ${job.top_match_reason ? `
+        <div class="top-reason">
+          ⭐ ${job.top_match_reason}
+        </div>
+      ` : ""}
 
-<div class="chip-wrap">
-  ${(job.match_reasons || [])
-    .filter(r => r !== job.top_match_reason)
-    .map((reason) => `<span class="pill">${reason}</span>`)
-    .join("")}
-</div>
+      <div class="chip-wrap">
+        ${(job.match_reasons || [])
+          .filter((reason) => reason !== job.top_match_reason)
+          .map((reason) => `<span class="pill">${reason}</span>`)
+          .join("")}
+      </div>
+
+      <div class="chip-wrap">
+        ${(job.duties || []).map((d) => `<span class="pill">${d}</span>`).join("")}
+      </div>
+
+      <button type="button" class="applyBtn">Apply now</button>
     `;
 
-    card.querySelector("button").addEventListener("click", async () => {
-      const { res, data } = await api(`/jobs/${job.id}/apply`, { method: "POST" });
-      if (!res.ok) return alert(data.error || "Could not apply");
-      alert("Applied");
-      loadApplications();
-    });
+    const applyBtn = card.querySelector(".applyBtn");
+    if (applyBtn) {
+      applyBtn.addEventListener("click", async () => {
+        const { res, data } = await api(`/jobs/${job.id}/apply`, { method: "POST" });
+        if (!res.ok) return alert(data.error || "Could not apply");
+        alert("Applied");
+        loadApplications();
+      });
+    }
 
     root.appendChild(card);
   });
