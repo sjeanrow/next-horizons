@@ -94,7 +94,7 @@
           You have applications waiting for review.
         </div>
 
-       <div class="row" style="margin-bottom:10px;">
+ <div class="row" style="margin-bottom:10px;">
   <select id="applicationFilter">
     <option value="All">All Applications</option>
     <option value="Needs Action" selected>Needs Action</option>
@@ -107,6 +107,13 @@
   </select>
 
   <input id="applicationSearch" placeholder="Search candidate name or email" />
+
+  <select id="applicationSort">
+    <option value="Newest">Newest first</option>
+    <option value="Oldest">Oldest first</option>
+    <option value="NameAZ">Name A–Z</option>
+    <option value="NameZA">Name Z–A</option>
+  </select>
 </div>
         
         <div id="employerSummary" class="summary-grid">
