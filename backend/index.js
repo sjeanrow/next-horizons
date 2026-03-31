@@ -100,7 +100,7 @@ async function refreshEmployerProbation(employerId) {
 }
 
 async function updateNoResponseStatuses() {
-  const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const cutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString();
 
   const { data: staleApps, error } = await supabase
     .from("applications")
