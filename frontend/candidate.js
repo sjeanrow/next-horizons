@@ -412,8 +412,11 @@ const trust = getEmployerTrustLabel(realRate, totalApps, probation);
       <p class="muted">${trustMessage}</p>
       <p>${job.job_type || ""} · ${job.work_location || ""}</p>
       <p><strong>Match score:</strong> ${job.match_score}</p>
+      ${(job.match_reasons || []).map((reason) => `<span class="pill">${reason}</span>`).join("")}
+</div>
       <div class="chip-wrap">${(job.duties || []).map((d) => `<span class="pill">${d}</span>`).join("")}</div>
       <button>Apply now</button>
+      <div class="chip-wrap">
     `;
 
     card.querySelector("button").addEventListener("click", async () => {
