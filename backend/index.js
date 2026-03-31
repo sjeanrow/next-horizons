@@ -447,7 +447,9 @@ app.get("/candidate/applications", authRequired, async (req, res) => {
 });
 
 app.get("/jobs/matches", authRequired, async (req, res) => {
-  if (req.user.role !== "candidate") return res.status(403).json({ error: "Candidate only" });
+  if (req.user.role !== "candidate") {
+    return res.status(403).json({ error: "Candidate only" });
+  }
 
   const { data: candidate, error: candidateError } = await supabase
     .from("users")
@@ -455,14 +457,18 @@ app.get("/jobs/matches", authRequired, async (req, res) => {
     .eq("id", req.user.id)
     .single();
 
-  if (candidateError) return res.status(500).json({ error: candidateError.message });
+  if (candidateError) {
+    return res.status(500).json({ error: candidateError.message });
+  }
 
   const { data: jobs, error: jobsError } = await supabase
     .from("jobs")
     .select("*")
     .eq("verified", true);
 
-  if (jobsError) return res.status(500).json({ error: jobsError.message });
+  if (jobsError) {
+    return res.status(500).json({ error: jobsError.message });
+  }
 
   const employerIds = [...new Set((jobs || []).map((job) => job.employer_id).filter(Boolean))];
 
@@ -473,7 +479,9 @@ app.get("/jobs/matches", authRequired, async (req, res) => {
         .in("employer_id", employerIds)
     : { data: [], error: null };
 
-  if (metricsError) return res.status(500).json({ error: metricsError.message });
+  if (metricsError) {
+    return res.status(500).json({ error: metricsError.message });
+  }
 
   const metricsMap = Object.fromEntries(
     (metrics || []).map((m) => {
@@ -511,51 +519,28 @@ app.get("/jobs/matches", authRequired, async (req, res) => {
   const desiredTitles = (candidate.desired_titles || []).map((x) => String(x).toLowerCase());
   const desiredDuties = (candidate.desired_duties || []).map((x) => String(x).toLowerCase());
 
- const scored = (jobs || []).map((job) => {
-  let score = 0;
-  const reasons = [];
+  const scored = (jobs || []).map((job) => {
+    let score = 0;
+    const reasons = [];
 
-  if (candidate.job_type && job.job_type === candidate.job_type) {
-    score += 3;
-    reasons.push("Matches your preferred job type");
-  }
-
-  if (desiredTitles.some((wanted) => (job.title || "").toLowerCase().includes(wanted))) {
-    score += 4;
-    reasons.push("Title matches what you're looking for");
-  }
-
-  for (const duty of (job.duties || [])) {
-    if (desiredDuties.includes(String(duty).toLowerCase())) {
-      score += 2;
+    if (candidate.job_type && job.job_type === candidate.job_type) {
+      score += 3;
+      reasons.push("Matches your preferred job type");
     }
-  }
 
-  if ((job.duties || []).some((duty) => desiredDuties.includes(String(duty).toLowerCase()))) {
-    reasons.push("Duties align with your interests");
-  }
-
-  const employerMeta = metricsMap[job.employer_id] || {
-    employer_response_rate: 0,
-    employer_trust_label: "New Employer",
-    employer_trust_tone: "new",
-    employer_total_applications: 0,
-    employer_probation: false
-  };
-
-  return {
-    ...job,
-    ...employerMeta,
-    match_score: score,
-    match_reasons: reasons
-  };
-}).sort((a, b) => b.match_score - a.match_score);
-
-    if (candidate.job_type && job.job_type === candidate.job_type) score += 3;
-    if (desiredTitles.some((wanted) => (job.title || "").toLowerCase().includes(wanted))) score += 4;
+    if (desiredTitles.some((wanted) => (job.title || "").toLowerCase().includes(wanted))) {
+      score += 4;
+      reasons.push("Title matches what you're looking for");
+    }
 
     for (const duty of (job.duties || [])) {
-      if (desiredDuties.includes(String(duty).toLowerCase())) score += 2;
+      if (desiredDuties.includes(String(duty).toLowerCase())) {
+        score += 2;
+      }
+    }
+
+    if ((job.duties || []).some((duty) => desiredDuties.includes(String(duty).toLowerCase()))) {
+      reasons.push("Duties align with your interests");
     }
 
     const employerMeta = metricsMap[job.employer_id] || {
@@ -569,7 +554,8 @@ app.get("/jobs/matches", authRequired, async (req, res) => {
     return {
       ...job,
       ...employerMeta,
-      match_score: score
+      match_score: score,
+      match_reasons: reasons
     };
   }).sort((a, b) => b.match_score - a.match_score);
 
