@@ -157,9 +157,19 @@ async function loadApplications() {
     return;
   }
 
-  const filtered = currentApplicationFilter === "All"
+ const filtered =
+  currentApplicationFilter === "All"
     ? data
-    : data.filter(app => app.status === currentApplicationFilter);
+    : currentApplicationFilter === "Needs Action"
+      ? data.filter(app => app.status === "Pending" || app.status === "No Response")
+      : data.filter(app => app.status === currentApplicationFilter);
+
+if (!filtered.length) {
+  root.innerHTML = currentApplicationFilter === "Needs Action"
+    ? "<p>No applications currently need action.</p>"
+    : `<p>No ${currentApplicationFilter.toLowerCase()} applications found.</p>`;
+  return;
+}
 
   filtered.forEach(app => {
     const card = document.createElement("div");
