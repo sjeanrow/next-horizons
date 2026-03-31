@@ -69,4 +69,13 @@ button.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
   .summary-grid {
     grid-template-columns: 1fr 1fr;
   }
+  .top-reason {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin: 6px 0;
+  display: inline-block;
+}
 }
