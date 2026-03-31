@@ -406,6 +406,7 @@ async function loadMatches() {
     const probation = !!job.employer_probation;
     const trust = getEmployerTrustLabel(realRate, totalApps, probation);
     const trustMessage = getEmployerTrustMessage(trust.label);
+    const matchPercent = getMatchPercent(job.match_score);
 
     card.innerHTML = `
       <h3>${job.title}</h3>
@@ -417,7 +418,7 @@ async function loadMatches() {
 
       <p class="muted">${trustMessage}</p>
       <p>${job.job_type || ""} · ${job.work_location || ""}</p>
-      <p><strong>Match score:</strong> ${job.match_score}</p>
+      <p><strong>${matchPercent}% match</strong></p>
 
       ${job.top_match_reason ? `
         <div class="top-reason">
