@@ -206,20 +206,46 @@ async function loadApplications() {
     return;
   }
 
-  data.forEach(app => {
+  data.forEach((app) => {
     const card = document.createElement("div");
     card.className = "job";
-    card.innerHTML = `<h3>${app.job?.title || "Job"}</h3><p><strong>${app.candidate?.first_name || ""} ${app.candidate?.last_name || ""}</strong> · ${app.candidate?.email || ""}</p><p>Applied: ${new Date(app.applied_at).toLocaleDateString()}</p><div class="row"><span class="pill badge-${app.status}">${app.status}</span><select>${["Pending","Interviewing","Denied","Offered","Accepted","No Response"].map(s => `<option ${s === app.status ? "selected" : ""}>${s}</option>`).join("")}</select></div><button class="secondary small">Update status</button>`;
 
-    const select = card.querySelector("select");
-    card.querySelector("button").addEventListener("click", async () => {
+    card.innerHTML = `
+      <h3>${app.job?.title || "Job"}</h3>
+      <p><strong>${app.candidate?.first_name || ""} ${app.candidate?.last_name || ""}</strong> · ${app.candidate?.email || ""}</p>
+      <p>Applied: ${new Date(app.applied_at).toLocaleDateString()}</p>
+      <div class="row">
+        <span class="pill badge-${app.status}">${app.status}</span>
+        <select class="statusSelect">
+          <option value="Pending" ${app.status === "Pending" ? "selected" : ""}>Pending</option>
+          <option value="Interviewing" ${app.status === "Interviewing" ? "selected" : ""}>Interviewing</option>
+          <option value="Denied" ${app.status === "Denied" ? "selected" : ""}>Denied</option>
+          <option value="Offered" ${app.status === "Offered" ? "selected" : ""}>Offered</option>
+          <option value="Accepted" ${app.status === "Accepted" ? "selected" : ""}>Accepted</option>
+          <option value="No Response" ${app.status === "No Response" ? "selected" : ""}>No Response</option>
+        </select>
+      </div>
+      <button type="button" class="secondary small">Update status</button>
+    `;
+
+    const select = card.querySelector(".statusSelect");
+    const button = card.querySelector("button");
+
+    button.addEventListener("click", async () => {
+      const newStatus = select.value;
+
       const { res, data } = await api(`/employer/applications/${app.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ status: select.value })
+        body: JSON.stringify({ status: newStatus })
       });
-      if (!res.ok) return alert(data.error || "Could not update status");
-      alert("Status updated");
-      loadApplications();
+
+      if (!res.ok) {
+        alert(data.error || "Could not update status");
+        return;
+      }
+
+      alert(`Status updated to ${newStatus}`);
+      await loadApplications();
     });
 
     root.appendChild(card);
