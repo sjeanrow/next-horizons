@@ -52,6 +52,7 @@ setTabs();
 let employerJobs = [];
 let employerApplications = [];
 let currentApplicationFilter = "All";
+let currentApplicationSearch = "";
 
 function getEmployerTrustLabel(responseRate) {
   if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
@@ -157,17 +158,30 @@ async function loadApplications() {
     return;
   }
 
- const filtered =
+let filtered =
   currentApplicationFilter === "All"
     ? data
     : currentApplicationFilter === "Needs Action"
       ? data.filter(app => app.status === "Pending" || app.status === "No Response")
       : data.filter(app => app.status === currentApplicationFilter);
 
+if (currentApplicationSearch) {
+  filtered = filtered.filter((app) => {
+    const fullName = `${app.candidate?.first_name || ""} ${app.candidate?.last_name || ""}`.toLowerCase();
+    const email = `${app.candidate?.email || ""}`.toLowerCase();
+
+    return fullName.includes(currentApplicationSearch) || email.includes(currentApplicationSearch);
+  });
+}
+
 if (!filtered.length) {
-  root.innerHTML = currentApplicationFilter === "Needs Action"
-    ? "<p>No applications currently need action.</p>"
-    : `<p>No ${currentApplicationFilter.toLowerCase()} applications found.</p>`;
+  if (currentApplicationSearch) {
+    root.innerHTML = "<p>No applicants match that search.</p>";
+  } else if (currentApplicationFilter === "Needs Action") {
+    root.innerHTML = "<p>No applications currently need action.</p>";
+  } else {
+    root.innerHTML = `<p>No ${currentApplicationFilter.toLowerCase()} applications found.</p>`;
+  }
   return;
 }
 
@@ -221,6 +235,13 @@ const filterEl = document.getElementById("applicationFilter");
 if (filterEl) {
   filterEl.addEventListener("change", (e) => {
     currentApplicationFilter = e.target.value;
+    loadApplications();
+  });
+}
+const searchEl = document.getElementById("applicationSearch");
+if (searchEl) {
+  searchEl.addEventListener("input", (e) => {
+    currentApplicationSearch = e.target.value.toLowerCase().trim();
     loadApplications();
   });
 }
