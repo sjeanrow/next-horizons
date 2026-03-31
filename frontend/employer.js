@@ -51,7 +51,7 @@ setTabs();
 
 let employerJobs = [];
 let employerApplications = [];
-let currentApplicationFilter = "All";
+let currentApplicationFilter = "Needs Action";
 let currentApplicationSearch = "";
 
 function getEmployerTrustLabel(responseRate) {
