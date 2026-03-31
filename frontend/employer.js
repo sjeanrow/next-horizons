@@ -53,6 +53,7 @@ let employerJobs = [];
 let employerApplications = [];
 let currentApplicationFilter = "Needs Action";
 let currentApplicationSearch = "";
+let currentApplicationSort = "Newest";
 
 function getEmployerTrustLabel(responseRate) {
   if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
@@ -173,7 +174,23 @@ if (currentApplicationSearch) {
     return fullName.includes(currentApplicationSearch) || email.includes(currentApplicationSearch);
   });
 }
-
+if (currentApplicationSort === "Newest") {
+  filtered.sort((a, b) => new Date(b.applied_at) - new Date(a.applied_at));
+} else if (currentApplicationSort === "Oldest") {
+  filtered.sort((a, b) => new Date(a.applied_at) - new Date(b.applied_at));
+} else if (currentApplicationSort === "NameAZ") {
+  filtered.sort((a, b) => {
+    const nameA = `${a.candidate?.first_name || ""} ${a.candidate?.last_name || ""}`.trim().toLowerCase();
+    const nameB = `${b.candidate?.first_name || ""} ${b.candidate?.last_name || ""}`.trim().toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+} else if (currentApplicationSort === "NameZA") {
+  filtered.sort((a, b) => {
+    const nameA = `${a.candidate?.first_name || ""} ${a.candidate?.last_name || ""}`.trim().toLowerCase();
+    const nameB = `${b.candidate?.first_name || ""} ${b.candidate?.last_name || ""}`.trim().toLowerCase();
+    return nameB.localeCompare(nameA);
+  });
+}
 if (!filtered.length) {
   if (currentApplicationSearch) {
     root.innerHTML = "<p>No applicants match that search.</p>";
@@ -242,6 +259,13 @@ const searchEl = document.getElementById("applicationSearch");
 if (searchEl) {
   searchEl.addEventListener("input", (e) => {
     currentApplicationSearch = e.target.value.toLowerCase().trim();
+    loadApplications();
+  });
+}
+const sortEl = document.getElementById("applicationSort");
+if (sortEl) {
+  sortEl.addEventListener("change", (e) => {
+    currentApplicationSort = e.target.value;
     loadApplications();
   });
 }
