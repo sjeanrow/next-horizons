@@ -1,93 +1,143 @@
 <!doctype html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8"/>
-      <meta name="viewport" content="width=device-width,initial-scale=1"/>
-      <title>Next Horizons - Employer</title>
-      <link rel="stylesheet" href="styles.css"/>
-   </head>
-   <body>
-      <div class="wrap">
-         <div class="topbar">
-            <h1>Employer Dashboard</h1>
-            <div class="tabs"><button class="secondary small" data-tab="jobTab">Post Job</button><button class="secondary small" data-tab="jobsTab">Your Jobs</button><button class="secondary small" data-tab="applicationsTab">Applications</button><button id="logoutBtn" class="secondary small">Log out</button></div>
-         </div>
-         <section id="jobTab" class="card">
-            <h2>Post a job</h2>
-            <form id="jobForm" class="stack">
-               <div class="row"><input id="company" placeholder="Company" required/><input id="title" placeholder="Job title" required/></div>
-               <div class="row"><input id="dutyInput" placeholder="Add duty"/><button type="button" id="addDuty" class="secondary small">Add duty</button></div>
-               <div id="dutyChips" class="chip-wrap"></div>
-               <div class="row"><input id="educationReqInput" placeholder="Add education requirement"/><button type="button" id="addEducationReq" class="secondary small">Add education requirement</button></div>
-               <div id="educationReqChips" class="chip-wrap"></div>
-               <div class="row"><input id="experienceReqInput" placeholder="Add job history requirement"/><button type="button" id="addExperienceReq" class="secondary small">Add job history requirement</button></div>
-               <div id="experienceReqChips" class="chip-wrap"></div>
-               <div class="row">
-                  <select id="work_location">
-                     <option>Remote</option>
-                     <option>On-Site</option>
-                     <option>Hybrid</option>
-                  </select>
-                  <input id="remote_scope" placeholder="If remote: in-state only or anywhere?"/>
-               </div>
-               <div class="row"><input id="timezone_hiring_for" placeholder="Time zone hiring for"/><input id="timezone_hiring_from" placeholder="Time zone hiring from"/></div>
-               <label>Select work days</label>
-<div id="daysSelect" class="chip-wrap"></div>
-
-<label>Enter shifts for selected days</label>
-<div id="shiftsContainer" class="list"></div>
-               <div class="row">
-                  <input id="pay_rate" placeholder="Pay rate / salary"/>
-                  <select id="job_type">
-                     <option>Full-Time</option>
-                     <option>Part-Time</option>
-                     <option>Contract</option>
-                     <option>Internship</option>
-                  </select>
-               </div>
-               <button id="postJobBtn" type="submit">Post job</button>
-            </form>
-         </section>
-         <section id="jobsTab" class="card hidden">
-            <h2>Your jobs</h2>
-            <div id="jobs"></div>
-         </section>
-         <section id="applicationsTab" class="card">
-            <h2>Applications</h2>
-             <div id="probationWarning" class="hidden" style="background:#fde8e8;padding:12px;border-radius:12px;margin-bottom:12px;">
-    ⚠️ Your account is under review due to low response rates. You cannot post new jobs until this improves.
-  </div>
-            <div id="employerReminder" class="hidden" style="background:#fff4db;padding:12px;border-radius:12px;margin-bottom:12px;">
-  You have applications waiting for review.
-</div>
-            <div id="employerSummary" class="summary-grid">
-    <div class="summary-card">
-      <span class="summary-label">Active Jobs</span>
-      <strong id="sumJobs">0</strong>
-    </div>
-
-    <div class="summary-card">
-      <span class="summary-label">Total Applicants</span>
-      <strong id="sumApplicants">0</strong>
-    </div>
-
-    <div class="summary-card">
-      <span class="summary-label">Pending Responses</span>
-      <strong id="sumPending">0</strong>
-    </div>
-
-    <div class="summary-card">
-      <span class="summary-label">Response Rate</span>
-      <strong id="sumResponseRate">0%</strong>
-    </div>
-  
-            <div class="summary-card">
-  <span class="summary-label">Trust Status</span>
-  <strong id="sumTrustLabel">Fast Responder</strong>
-</div>
-            <div id="applications"></div>
-         </section>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Next Horizons - Employer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <h1>Employer Dashboard</h1>
+        <div class="tabs">
+          <button class="secondary small" data-tab="jobTab">Post Job</button>
+          <button class="secondary small" data-tab="jobsTab">Your Jobs</button>
+          <button class="secondary small" data-tab="applicationsTab">Applications</button>
+          <button id="logoutBtn" class="secondary small">Log out</button>
+        </div>
       </div>
-      <script src="config.js"></script><script src="employer.js"></script>
-   </body>
+
+      <section id="jobTab" class="card">
+        <h2>Post a job</h2>
+        <form id="jobForm" class="stack">
+          <div class="row">
+            <input id="company" placeholder="Company" required />
+            <input id="title" placeholder="Job title" required />
+          </div>
+
+          <div class="row">
+            <input id="dutyInput" placeholder="Add duty" />
+            <button type="button" id="addDuty" class="secondary small">Add duty</button>
+          </div>
+          <div id="dutyChips" class="chip-wrap"></div>
+
+          <div class="row">
+            <input id="educationReqInput" placeholder="Add education requirement" />
+            <button type="button" id="addEducationReq" class="secondary small">Add education requirement</button>
+          </div>
+          <div id="educationReqChips" class="chip-wrap"></div>
+
+          <div class="row">
+            <input id="experienceReqInput" placeholder="Add job history requirement" />
+            <button type="button" id="addExperienceReq" class="secondary small">Add job history requirement</button>
+          </div>
+          <div id="experienceReqChips" class="chip-wrap"></div>
+
+          <div class="row">
+            <select id="work_location">
+              <option>Remote</option>
+              <option>On-Site</option>
+              <option>Hybrid</option>
+            </select>
+            <input id="remote_scope" placeholder="If remote: in-state only or anywhere?" />
+          </div>
+
+          <div class="row">
+            <input id="timezone_hiring_for" placeholder="Time zone hiring for" />
+            <input id="timezone_hiring_from" placeholder="Time zone hiring from" />
+          </div>
+
+          <label>Select work days</label>
+          <div id="daysSelect" class="chip-wrap"></div>
+
+          <label>Enter shifts for selected days</label>
+          <div id="shiftsContainer" class="list"></div>
+
+          <div class="row">
+            <input id="pay_rate" placeholder="Pay rate / salary" />
+            <select id="job_type">
+              <option>Full-Time</option>
+              <option>Part-Time</option>
+              <option>Contract</option>
+              <option>Internship</option>
+            </select>
+          </div>
+
+          <button id="postJobBtn" type="submit">Post job</button>
+        </form>
+      </section>
+
+      <section id="jobsTab" class="card hidden">
+        <h2>Your jobs</h2>
+        <div id="jobs"></div>
+      </section>
+
+      <section id="applicationsTab" class="card hidden">
+        <h2>Applications</h2>
+
+        <div id="probationWarning" class="hidden" style="background:#fde8e8;padding:12px;border-radius:12px;margin-bottom:12px;">
+          ⚠️ Your account is under review due to low response rates. You cannot post new jobs until this improves.
+        </div>
+
+        <div id="employerReminder" class="hidden" style="background:#fff4db;padding:12px;border-radius:12px;margin-bottom:12px;">
+          You have applications waiting for review.
+        </div>
+
+        <div class="row" style="margin-bottom:10px;">
+          <select id="applicationFilter">
+            <option value="All">All Applications</option>
+            <option value="Pending">Pending</option>
+            <option value="Interviewing">Interviewing</option>
+            <option value="Offered">Offered</option>
+            <option value="Accepted">Accepted</option>
+            <option value="Denied">Denied</option>
+            <option value="No Response">No Response</option>
+          </select>
+        </div>
+
+        <div id="employerSummary" class="summary-grid">
+          <div class="summary-card">
+            <span class="summary-label">Active Jobs</span>
+            <strong id="sumJobs">0</strong>
+          </div>
+
+          <div class="summary-card">
+            <span class="summary-label">Total Applicants</span>
+            <strong id="sumApplicants">0</strong>
+          </div>
+
+          <div class="summary-card">
+            <span class="summary-label">Pending Responses</span>
+            <strong id="sumPending">0</strong>
+          </div>
+
+          <div class="summary-card">
+            <span class="summary-label">Response Rate</span>
+            <strong id="sumResponseRate">0%</strong>
+          </div>
+
+          <div class="summary-card">
+            <span class="summary-label">Trust Status</span>
+            <strong id="sumTrustLabel">Fast Responder</strong>
+          </div>
+        </div>
+
+        <div id="applications"></div>
+      </section>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="employer.js"></script>
+  </body>
 </html>
