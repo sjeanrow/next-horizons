@@ -244,6 +244,13 @@ function getEmployerTrustLabel(responseRate, totalApplications = 0, probation = 
   if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
   return { label: "Needs Attention", tone: "warn" };
 }
+function getEmployerTrustMessage(label) {
+  if (label === "New Employer") return "Not enough data yet.";
+  if (label === "Needs Attention") return "This employer may respond slowly.";
+  if (label === "Under Review") return "Employer is under review.";
+  if (label === "Fast Responder") return "Usually responds reliably.";
+  return "";
+}
 
 function renderEducation() {
   const root = document.getElementById("educationList");
@@ -394,6 +401,7 @@ async function loadMatches() {
     const totalApps = Number(job.employer_total_applications || 0);
 const probation = !!job.employer_probation;
 const trust = getEmployerTrustLabel(realRate, totalApps, probation);
+    const trustMessage = getEmployerTrustMessage(trust.label);
 
     card.innerHTML = `
       <h3>${job.title}</h3>
@@ -401,6 +409,7 @@ const trust = getEmployerTrustLabel(realRate, totalApps, probation);
       <div class="trust-badge trust-${trust.tone}">
         ${trust.label}${totalApps >= 3 && !probation ? ` (${realRate}%)` : ""}
       </div>
+      <p class="muted">${trustMessage}</p>
       <p>${job.job_type || ""} · ${job.work_location || ""}</p>
       <p><strong>Match score:</strong> ${job.match_score}</p>
       <div class="chip-wrap">${(job.duties || []).map((d) => `<span class="pill">${d}</span>`).join("")}</div>
