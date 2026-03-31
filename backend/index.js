@@ -511,8 +511,45 @@ app.get("/jobs/matches", authRequired, async (req, res) => {
   const desiredTitles = (candidate.desired_titles || []).map((x) => String(x).toLowerCase());
   const desiredDuties = (candidate.desired_duties || []).map((x) => String(x).toLowerCase());
 
-  const scored = (jobs || []).map((job) => {
-    let score = 0;
+ const scored = (jobs || []).map((job) => {
+  let score = 0;
+  const reasons = [];
+
+  if (candidate.job_type && job.job_type === candidate.job_type) {
+    score += 3;
+    reasons.push("Matches your preferred job type");
+  }
+
+  if (desiredTitles.some((wanted) => (job.title || "").toLowerCase().includes(wanted))) {
+    score += 4;
+    reasons.push("Title matches what you're looking for");
+  }
+
+  for (const duty of (job.duties || [])) {
+    if (desiredDuties.includes(String(duty).toLowerCase())) {
+      score += 2;
+    }
+  }
+
+  if ((job.duties || []).some((duty) => desiredDuties.includes(String(duty).toLowerCase()))) {
+    reasons.push("Duties align with your interests");
+  }
+
+  const employerMeta = metricsMap[job.employer_id] || {
+    employer_response_rate: 0,
+    employer_trust_label: "New Employer",
+    employer_trust_tone: "new",
+    employer_total_applications: 0,
+    employer_probation: false
+  };
+
+  return {
+    ...job,
+    ...employerMeta,
+    match_score: score,
+    match_reasons: reasons
+  };
+}).sort((a, b) => b.match_score - a.match_score);
 
     if (candidate.job_type && job.job_type === candidate.job_type) score += 3;
     if (desiredTitles.some((wanted) => (job.title || "").toLowerCase().includes(wanted))) score += 4;
