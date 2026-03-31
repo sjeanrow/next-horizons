@@ -124,7 +124,17 @@ function renderDayButtons() {
     postBtn.disabled = isProbation;
     postBtn.textContent = isProbation ? "Posting disabled during review" : "Post job";
   }
+   const reminderEl = document.getElementById("employerReminder");
+const pendingCount = employerApplications.filter(a => a.status === "Pending").length;
+
+if (reminderEl) {
+  reminderEl.classList.toggle("hidden", pendingCount === 0);
+  reminderEl.textContent =
+    pendingCount === 1
+      ? "You have 1 application waiting for review."
+      : `You have ${pendingCount} applications waiting for review.`;
 }
+   }
     
 function getEmployerTrustLabel(responseRate) {
   if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
