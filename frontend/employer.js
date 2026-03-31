@@ -1,93 +1,65 @@
-
-function token(){return localStorage.getItem("nh_token")}
+function token() { return localStorage.getItem("nh_token"); }
 function getSitePassword() { return localStorage.getItem("nh_site_password") || ""; }
-function logout(){localStorage.clear();location.href="index.html"}
+function logout() { localStorage.clear(); location.href = "index.html"; }
+
+async function api(path, options = {}) {
+  const res = await fetch(`${window.API_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token()}`,
+      "x-site-password": getSitePassword(),
+      ...(options.headers || {})
+    }
+  });
+  const data = await res.json();
+  return { res, data };
+}
+
 async function confirmAccess() {
   if (!getSitePassword()) {
     location.href = "index.html";
     return false;
   }
+
   const res = await fetch(`${window.API_URL}/beta/check`, {
     method: "POST",
     headers: { "x-site-password": getSitePassword() }
   });
+
   if (!res.ok) {
     localStorage.removeItem("nh_site_password");
     location.href = "index.html";
     return false;
   }
+
   return true;
 }
-async function api(path, options={}){ const res = await fetch(`${window.API_URL}${path}`, {...options, headers: {"Content-Type":"application/json","Authorization":`Bearer ${token()}`, "x-site-password": getSitePassword(),...(options.headers||{})}}); const data = await res.json(); return {res,data};}
-function setTabs(){ document.querySelectorAll("[data-tab]").forEach(btn => btn.addEventListener("click",()=>{ document.querySelectorAll("section[id$='Tab']").forEach(s=>s.classList.add("hidden")); document.getElementById(btn.dataset.tab).classList.remove("hidden"); }));}
-function renderChips(root, values, onRemove){ root.innerHTML=""; values.forEach((value,index)=>{ const chip=document.createElement("div"); chip.className="chip"; chip.innerHTML=`<span>${value}</span><button type="button">×</button>`; chip.querySelector("button").addEventListener("click",()=>onRemove(index)); root.appendChild(chip); });}
+
+function setTabs() {
+  document.querySelectorAll("[data-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("section[id$='Tab']").forEach((section) => section.classList.add("hidden"));
+      document.getElementById(btn.dataset.tab).classList.remove("hidden");
+    });
+  });
+}
 
 if (!token()) location.href = "index.html";
 document.getElementById("logoutBtn").addEventListener("click", logout);
 setTabs();
-const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-let selectedDays = [];
-let shifts = {};
+
 let employerJobs = [];
 let employerApplications = [];
-function addChipValue(inputId, arr, renderFn){ const input=document.getElementById(inputId); const value=input.value.trim(); if(!value) return; arr.push(value); input.value=""; renderFn(); }
-function renderDuties(){ renderChips(document.getElementById("dutyChips"), duties, i=>{duties.splice(i,1);renderDuties();});}
-function renderEducationReq(){ renderChips(document.getElementById("educationReqChips"), educationReq, i=>{educationReq.splice(i,1);renderEducationReq();});}
-function renderExperienceReq(){ renderChips(document.getElementById("experienceReqChips"), experienceReq, i=>{experienceReq.splice(i,1);renderExperienceReq();});}
-addDuty.addEventListener("click",()=>addChipValue("dutyInput", duties, renderDuties));
-addEducationReq.addEventListener("click",()=>addChipValue("educationReqInput", educationReq, renderEducationReq));
-addExperienceReq.addEventListener("click",()=>addChipValue("experienceReqInput", experienceReq, renderExperienceReq));
-jobForm.addEventListener("submit", async (e)=>{
- e.preventDefault();
- const body={company:company.value,title:title.value,duties,education_req:educationReq,experience_req:experienceReq,work_location:work_location.value,remote_scope:remote_scope.value,timezone_hiring_for:timezone_hiring_for.value,timezone_hiring_from:timezone_hiring_from.value,days_shifts: selectedDays.map(day => `${day}: ${shifts[day] || ""}`),pay_rate:pay_rate.value,job_type:job_type.value};
- const {res,data}=await api("/employer/jobs",{method:"POST",body:JSON.stringify(body)});
- if(!res.ok) return alert(data.error||"Could not post job");
- alert("Job posted");
+let currentApplicationFilter = "All";
 
-duties = [];
-educationReq = [];
-experienceReq = [];
-
-selectedDays = [];
-shifts = {};
-
-renderDuties();
-renderEducationReq();
-renderExperienceReq();
-renderDayButtons();
-renderShiftInputs();
-
-jobForm.reset();
-loadJobs();
-loadApplications();
- });
-
-function renderDayButtons() {
-  const root = document.getElementById("daysSelect");
-  root.innerHTML = "";
-
-  weekdays.forEach((day) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = selectedDays.includes(day) ? "small" : "secondary small";
-    btn.textContent = day;
-
-    btn.addEventListener("click", () => {
-      if (selectedDays.includes(day)) {
-        selectedDays = selectedDays.filter((d) => d !== day);
-        delete shifts[day];
-      } else {
-        selectedDays.push(day);
-        shifts[day] = shifts[day] || "";
-      }
-
-      renderDayButtons();
-      renderShiftInputs();
-    });
-    root.appendChild(btn);
-  });
+function getEmployerTrustLabel(responseRate) {
+  if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
+  if (responseRate >= 40) return { label: "Needs Attention", tone: "warn" };
+  return { label: "At Risk", tone: "bad" };
 }
- function updateEmployerSummary() {
+
+function updateEmployerSummary() {
   const jobsEl = document.getElementById("sumJobs");
   const applicantsEl = document.getElementById("sumApplicants");
   const pendingEl = document.getElementById("sumPending");
@@ -124,44 +96,17 @@ function renderDayButtons() {
     postBtn.disabled = isProbation;
     postBtn.textContent = isProbation ? "Posting disabled during review" : "Post job";
   }
-   const reminderEl = document.getElementById("employerReminder");
-const pendingCount = employerApplications.filter(a => a.status === "Pending").length;
 
-if (reminderEl) {
-  reminderEl.classList.toggle("hidden", pendingCount === 0);
-  reminderEl.textContent =
-    pendingCount === 1
-      ? "You have 1 application waiting for review."
-      : `You have ${pendingCount} applications waiting for review.`;
-}
-   }
-    
-function getEmployerTrustLabel(responseRate) {
-  if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
-  if (responseRate >= 40) return { label: "Needs Attention", tone: "warn" };
-  return { label: "At Risk", tone: "bad" };
+  const reminderEl = document.getElementById("employerReminder");
+  if (reminderEl) {
+    reminderEl.classList.toggle("hidden", pendingResponses === 0);
+    reminderEl.textContent =
+      pendingResponses === 1
+        ? "You have 1 application waiting for review."
+        : `You have ${pendingResponses} applications waiting for review.`;
+  }
 }
 
-function renderShiftInputs() {
-  const root = document.getElementById("shiftsContainer");
-  root.innerHTML = "";
-
-  selectedDays.forEach((day) => {
-    const wrap = document.createElement("div");
-    wrap.className = "entry";
-    wrap.innerHTML = `
-      <h4>${day}</h4>
-      <input placeholder="${day} shift(s)" value="${shifts[day] || ""}" />
-    `;
-
-    const input = wrap.querySelector("input");
-    input.addEventListener("input", (e) => {
-      shifts[day] = e.target.value;
-    });
-
-    root.appendChild(wrap);
-  });
-}
 async function loadJobs() {
   const { res, data } = await api("/employer/jobs");
   const root = document.getElementById("jobs");
@@ -183,7 +128,13 @@ async function loadJobs() {
   data.forEach(job => {
     const card = document.createElement("div");
     card.className = "job";
-    card.innerHTML = `<h3>${job.title}</h3><p><strong>${job.company || ""}</strong> · ${job.job_type || ""}</p><div class="chip-wrap">${(job.duties || []).map(d => `<span class="pill">${d}</span>`).join("")}</div><p><strong>Pay:</strong> ${job.pay_rate || ""}</p><p><strong>Location:</strong> ${job.work_location || ""}</p>`;
+    card.innerHTML = `
+      <h3>${job.title}</h3>
+      <p><strong>${job.company || ""}</strong> · ${job.job_type || ""}</p>
+      <div class="chip-wrap">${(job.duties || []).map(d => `<span class="pill">${d}</span>`).join("")}</div>
+      <p><strong>Pay:</strong> ${job.pay_rate || ""}</p>
+      <p><strong>Location:</strong> ${job.work_location || ""}</p>
+    `;
     root.appendChild(card);
   });
 }
@@ -206,7 +157,11 @@ async function loadApplications() {
     return;
   }
 
-  data.forEach((app) => {
+  const filtered = currentApplicationFilter === "All"
+    ? data
+    : data.filter(app => app.status === currentApplicationFilter);
+
+  filtered.forEach(app => {
     const card = document.createElement("div");
     card.className = "job";
 
@@ -251,12 +206,18 @@ async function loadApplications() {
     root.appendChild(card);
   });
 }
+
+const filterEl = document.getElementById("applicationFilter");
+if (filterEl) {
+  filterEl.addEventListener("change", (e) => {
+    currentApplicationFilter = e.target.value;
+    loadApplications();
+  });
+}
+
 (async () => {
   const ok = await confirmAccess();
   if (!ok) return;
-
-  renderDayButtons();
-  renderShiftInputs();
 
   loadJobs();
   loadApplications();
