@@ -200,6 +200,22 @@ app.get("/me", authRequired, async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
   return res.json(data);
 });
+app.delete("/me", authRequired, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const { error } = await supabase
+      .from("users")
+      .delete()
+      .eq("id", userId);
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: String(err) });
+  }
+});
 
 app.get("/candidate/profile", authRequired, async (req, res) => {
   if (req.user.role !== "candidate") return res.status(403).json({ error: "Candidate only" });
