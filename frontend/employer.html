@@ -30,7 +30,7 @@
             <input id="dutyInput" placeholder="Add duty" />
             <button type="button" id="addDuty" class="secondary small">Add duty</button>
           </div>
-          "dutyChips" class="chip-wrap"></div>
+          <div id="dutyChips" class="chip-wrap"></div>
 
           <div class="row">
             <input id="educationReqInput" placeholder="Add education requirement" />
@@ -94,28 +94,28 @@
           You have applications waiting for review.
         </div>
 
- <div class="row" style="margin-bottom:10px;">
-  <select id="applicationFilter">
-    <option value="All">All Applications</option>
-    <option value="Needs Action" selected>Needs Action</option>
-    <option value="Pending">Pending</option>
-    <option value="Interviewing">Interviewing</option>
-    <option value="Offered">Offered</option>
-    <option value="Accepted">Accepted</option>
-    <option value="Denied">Denied</option>
-    <option value="No Response">No Response</option>
-  </select>
+        <div class="row" style="margin-bottom:10px;">
+          <select id="applicationFilter">
+            <option value="All">All Applications</option>
+            <option value="Needs Action" selected>Needs Action</option>
+            <option value="Pending">Pending</option>
+            <option value="Interviewing">Interviewing</option>
+            <option value="Offered">Offered</option>
+            <option value="Accepted">Accepted</option>
+            <option value="Denied">Denied</option>
+            <option value="No Response">No Response</option>
+          </select>
 
-  <input id="applicationSearch" placeholder="Search candidate name or email" />
+          <input id="applicationSearch" placeholder="Search candidate name or email" />
 
-  <select id="applicationSort">
-    <option value="Newest">Newest first</option>
-    <option value="Oldest">Oldest first</option>
-    <option value="NameAZ">Name A–Z</option>
-    <option value="NameZA">Name Z–A</option>
-  </select>
-</div>
-        
+          <select id="applicationSort">
+            <option value="Newest">Newest first</option>
+            <option value="Oldest">Oldest first</option>
+            <option value="NameAZ">Name A–Z</option>
+            <option value="NameZA">Name Z–A</option>
+          </select>
+        </div>
+
         <div id="employerSummary" class="summary-grid">
           <div class="summary-card">
             <span class="summary-label">Active Jobs</span>
@@ -144,12 +144,10 @@
         </div>
 
         <div id="applications"></div>
+
+        <button type="button" id="deleteProfileBtn" class="secondary small">Delete profile</button>
       </section>
     </div>
-
-    <button type="button" id="deleteProfileBtn" class="secondary small">
-  Delete profile
-</button>
 
     <script src="config.js"></script>
     <script src="employer.js"></script>
