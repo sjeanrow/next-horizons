@@ -290,7 +290,24 @@ if (sortEl) {
     loadApplications();
   });
 }
+const deleteProfileBtn = document.getElementById("deleteProfileBtn");
+if (deleteProfileBtn) {
+  deleteProfileBtn.addEventListener("click", async () => {
+    const confirmed = confirm("Are you sure you want to permanently delete your profile? This cannot be undone.");
+    if (!confirmed) return;
 
+    const { res, data } = await api("/me", { method: "DELETE" });
+
+    if (!res.ok) {
+      alert(data.error || "Could not delete profile");
+      return;
+    }
+
+    alert("Profile deleted");
+    localStorage.removeItem("nh_token");
+    location.href = "index.html";
+  });
+}
 (async () => {
   const ok = await confirmAccess();
   if (!ok) return;
