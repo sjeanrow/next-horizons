@@ -326,6 +326,34 @@ app.get("/employer/jobs", authRequired, async (req, res) => {
   if (error) return res.status(500).json({ error: error.message });
   return res.json(data || []);
 });
+app.delete("/employer/jobs/:id", authRequired, async (req, res) => {
+  if (req.user.role !== "employer") {
+    return res.status(403).json({ error: "Employer only" });
+  }
+
+  const jobId = Number(req.params.id);
+
+  const { data: job, error: jobError } = await supabase
+    .from("jobs")
+    .select("id, employer_id")
+    .eq("id", jobId)
+    .single();
+
+  if (jobError) return res.status(500).json({ error: jobError.message });
+  if (!job) return res.status(404).json({ error: "Job not found" });
+  if (job.employer_id !== req.user.id) {
+    return res.status(403).json({ error: "Not your job" });
+  }
+
+  const { error } = await supabase
+    .from("jobs")
+    .delete()
+    .eq("id", jobId);
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  return res.json({ ok: true });
+});
 
 app.get("/employer/applications", authRequired, async (req, res) => {
   if (req.user.role !== "employer") return res.status(403).json({ error: "Employer only" });
