@@ -130,13 +130,34 @@ async function loadJobs() {
   data.forEach(job => {
     const card = document.createElement("div");
     card.className = "job";
-    card.innerHTML = `
-      <h3>${job.title}</h3>
-      <p><strong>${job.company || ""}</strong> · ${job.job_type || ""}</p>
-      <div class="chip-wrap">${(job.duties || []).map(d => `<span class="pill">${d}</span>`).join("")}</div>
-      <p><strong>Pay:</strong> ${job.pay_rate || ""}</p>
-      <p><strong>Location:</strong> ${job.work_location || ""}</p>
-    `;
+   card.innerHTML = `
+  <h3>${job.title}</h3>
+  <p><strong>${job.company || ""}</strong> · ${job.job_type || ""}</p>
+  <div class="chip-wrap">${(job.duties || []).map(d => `<span class="pill">${d}</span>`).join("")}</div>
+  <p><strong>Pay:</strong> ${job.pay_rate || ""}</p>
+  <p><strong>Location:</strong> ${job.work_location || ""}</p>
+  <button type="button" class="secondary small deleteJobBtn">Delete job</button>
+`;
+    const deleteBtn = card.querySelector(".deleteJobBtn");
+if (deleteBtn) {
+  deleteBtn.addEventListener("click", async () => {
+    const confirmed = confirm(`Delete the job posting "${job.title}"?`);
+    if (!confirmed) return;
+
+    const { res, data } = await api(`/employer/jobs/${job.id}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) {
+      alert(data.error || "Could not delete job");
+      return;
+    }
+
+    alert("Job deleted");
+    loadJobs();
+    loadApplications();
+  });
+}
     root.appendChild(card);
   });
 }
