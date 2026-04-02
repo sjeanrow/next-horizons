@@ -54,13 +54,66 @@ let employerApplications = [];
 let currentApplicationFilter = "Needs Action";
 let currentApplicationSearch = "";
 let currentApplicationSort = "Newest";
+const weekdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+let selectedDays = [];
+let shifts = {};
 
 function getEmployerTrustLabel(responseRate) {
   if (responseRate >= 80) return { label: "Fast Responder", tone: "good" };
   if (responseRate >= 40) return { label: "Needs Attention", tone: "warn" };
   return { label: "At Risk", tone: "bad" };
 }
+function renderDayButtons() {
+  const root = document.getElementById("daysSelect");
+  if (!root) return;
 
+  root.innerHTML = "";
+
+  weekdays.forEach((day) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = selectedDays.includes(day) ? "small" : "secondary small";
+    btn.textContent = day;
+
+    btn.addEventListener("click", () => {
+      if (selectedDays.includes(day)) {
+        selectedDays = selectedDays.filter((d) => d !== day);
+        delete shifts[day];
+      } else {
+        selectedDays.push(day);
+        shifts[day] = shifts[day] || "";
+      }
+
+      renderDayButtons();
+      renderShiftInputs();
+    });
+
+    root.appendChild(btn);
+  });
+}
+
+function renderShiftInputs() {
+  const root = document.getElementById("shiftsContainer");
+  if (!root) return;
+
+  root.innerHTML = "";
+
+  selectedDays.forEach((day) => {
+    const wrap = document.createElement("div");
+    wrap.className = "entry";
+    wrap.innerHTML = `
+      <h4>${day}</h4>
+      <input placeholder="${day} shift(s)" value="${shifts[day] || ""}" />
+    `;
+
+    const input = wrap.querySelector("input");
+    input.addEventListener("input", (e) => {
+      shifts[day] = e.target.value;
+    });
+
+    root.appendChild(wrap);
+  });
+}
 function updateEmployerSummary() {
   const jobsEl = document.getElementById("sumJobs");
   const applicantsEl = document.getElementById("sumApplicants");
@@ -308,9 +361,59 @@ if (deleteProfileBtn) {
     location.href = "index.html";
   });
 }
+const jobForm = document.getElementById("jobForm");
+
+if (jobForm) {
+  jobForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const body = {
+      company: document.getElementById("company").value,
+      title: document.getElementById("title").value,
+      duties: [], // you already handle chips elsewhere
+      education_req: [],
+      experience_req: [],
+      work_location: document.getElementById("work_location").value,
+      remote_scope: document.getElementById("remote_scope").value,
+      timezone_hiring_for: document.getElementById("timezone_hiring_for").value,
+      timezone_hiring_from: document.getElementById("timezone_hiring_from").value,
+      pay_rate: document.getElementById("pay_rate").value,
+      job_type: document.getElementById("job_type").value,
+
+      // ✅ THIS IS THE IMPORTANT PART
+      days_shifts: selectedDays.map((day) => `${day}: ${shifts[day] || ""}`)
+    };
+
+    const { res, data } = await api("/employer/jobs", {
+      method: "POST",
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      alert(data.error || "Could not post job");
+      return;
+    }
+
+    alert("Job posted!");
+
+    // reset form
+    jobForm.reset();
+
+    // reset days + shifts
+    selectedDays = [];
+    shifts = {};
+    renderDayButtons();
+    renderShiftInputs();
+
+    loadJobs();
+  });
+}
 (async () => {
   const ok = await confirmAccess();
   if (!ok) return;
+
+  renderDayButtons();
+  renderShiftInputs();
 
   loadJobs();
   loadApplications();
